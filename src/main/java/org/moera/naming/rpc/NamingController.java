@@ -22,6 +22,8 @@ public class NamingController {
     @PostConstruct
     protected void init() {
         jsonRpcServer = new JsonRpcServer(new ObjectMapper(), namingService, NamingService.class);
+        jsonRpcServer.setAllowExtraParams(true);
+        jsonRpcServer.setAllowLessParams(true);
     }
 
     @PostMapping("/moera-naming")
