@@ -12,10 +12,23 @@ public class NameGeneration implements Serializable {
 
     @NotNull
     @Size(max=127)
-    private String name = "";
+    private String name;
 
     @NotNull
     private int generation;
+
+    public NameGeneration() {
+        this("", 0);
+    }
+
+    public NameGeneration(String name) {
+        this(name, 0);
+    }
+
+    public NameGeneration(String name, int generation) {
+        this.name = name;
+        this.generation = generation;
+    }
 
     public String getName() {
         return name;
