@@ -1,9 +1,10 @@
 package org.moera.naming.data;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Embeddable;
-import javax.validation.constraints.Size;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Embeddable
 public class NameGeneration implements Serializable {
@@ -44,6 +45,20 @@ public class NameGeneration implements Serializable {
 
     public void setGeneration(int generation) {
         this.generation = generation;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, generation);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof NameGeneration)) {
+            return false;
+        }
+        NameGeneration peer = (NameGeneration) obj;
+        return Objects.equals(name, peer.name) && generation == peer.generation;
     }
 
 }

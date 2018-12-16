@@ -8,7 +8,7 @@ public interface NamingService {
 
     long put(
             @JsonRpcParam("name") String name,
-            @JsonRpcParam("newGeneration") Boolean newGeneration,
+            @JsonRpcParam("newGeneration") boolean newGeneration,
             @JsonRpcParam("updatingKey") String updatingKey,
             @JsonRpcParam("nodeUri") String nodeUri,
             @JsonRpcParam("signingKey") String signingKey,
