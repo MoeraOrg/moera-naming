@@ -1,13 +1,11 @@
 package org.moera.naming.rpc;
 
-import java.util.List;
 import javax.inject.Inject;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.RegisteredName;
-import org.moera.naming.data.RegisteredNameRepository;
-import org.moera.naming.data.SigningKeyRepository;
+import org.moera.naming.data.Storage;
 import org.moera.naming.data.exception.NameEmptyException;
 import org.moera.naming.util.Util;
 import org.springframework.stereotype.Component;
@@ -18,10 +16,7 @@ import org.springframework.util.StringUtils;
 public class NamingServiceImpl implements NamingService {
 
     @Inject
-    private RegisteredNameRepository registeredNameRepository;
-
-    @Inject
-    private SigningKeyRepository signingKeyRepository;
+    private Storage storage;
 
     @Override
     public long put(
@@ -36,35 +31,25 @@ public class NamingServiceImpl implements NamingService {
         if (StringUtils.isEmpty(name)) {
             throw new NameEmptyException();
         }
-        NameGeneration latest = getLatestGeneration(name);
-        RegisteredName record;
+        RegisteredName latest = storage.getLatestGeneration(name);
+        RegisteredName target;
         if (newGeneration || isForceNewGeneration(latest)) {
-            record = new RegisteredName();
-            NameGeneration future = new NameGeneration(name, latest == null ? 0 : latest.getGeneration() + 1);
-            record.setNameGeneration(future);
+            int generation = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
+            target = new RegisteredName();
+            target.setNameGeneration(new NameGeneration(name, generation));
         } else {
-            record = getRecord(latest);
+            target = latest;
         }
-        registeredNameRepository.save(record);
+        storage.save(target);
 
         return 0;
     }
 
-    private boolean isForceNewGeneration(NameGeneration latest) {
+    private boolean isForceNewGeneration(RegisteredName latest) {
         if (latest == null) {
             return true;
         }
-        return getRecord(latest).getDeadline().before(Util.now());
-    }
-
-    private NameGeneration getLatestGeneration(String name) {
-        List<NameGeneration> generations = registeredNameRepository.getNameGenerations(name);
-        return generations.isEmpty() ? null : generations.get(0);
-    }
-
-    private RegisteredName getRecord(NameGeneration nameGeneration) {
-        return registeredNameRepository.findById(nameGeneration).orElse(null);
-        // FIXME Error if record == null
+        return latest.getDeadline().before(Util.now());
     }
 
 }
