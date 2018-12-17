@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
+import org.moera.naming.rpc.exception.ServiceErrorResolver;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -19,11 +20,15 @@ public class NamingController {
     @Inject
     private NamingService namingService;
 
+    @Inject
+    private ServiceErrorResolver serviceErrorResolver;
+
     @PostConstruct
     protected void init() {
         jsonRpcServer = new JsonRpcServer(new ObjectMapper(), namingService, NamingService.class);
         jsonRpcServer.setAllowExtraParams(true);
         jsonRpcServer.setAllowLessParams(true);
+        jsonRpcServer.setErrorResolver(serviceErrorResolver);
     }
 
     @PostMapping("/moera-naming")

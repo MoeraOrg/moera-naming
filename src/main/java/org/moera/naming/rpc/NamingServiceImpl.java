@@ -6,7 +6,8 @@ import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.Storage;
-import org.moera.naming.data.exception.NameEmptyException;
+import org.moera.naming.rpc.exception.ServiceError;
+import org.moera.naming.rpc.exception.ServiceException;
 import org.moera.naming.util.Util;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -29,7 +30,7 @@ public class NamingServiceImpl implements NamingService {
             String signature) {
 
         if (StringUtils.isEmpty(name)) {
-            throw new NameEmptyException();
+            throw new ServiceException(ServiceError.NAME_EMPTY);
         }
         RegisteredName latest = storage.getLatestGeneration(name);
         RegisteredName target;
