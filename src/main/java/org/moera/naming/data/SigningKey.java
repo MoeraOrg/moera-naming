@@ -28,8 +28,8 @@ public class SigningKey {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "name"),
-            @JoinColumn(name = "generation")
+            @JoinColumn(name = "generation"),
+            @JoinColumn(name = "name")
     })
     private RegisteredName registeredName;
 

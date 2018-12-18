@@ -20,8 +20,12 @@ public class Storage {
         return generations.isEmpty() ? null : generations.get(0);
     }
 
-    public void save(RegisteredName registeredName) {
-        registeredNameRepository.save(registeredName);
+    public RegisteredName save(RegisteredName registeredName) {
+        return registeredNameRepository.save(registeredName);
+    }
+
+    public SigningKey save(SigningKey signingKey) {
+        return signingKeyRepository.save(signingKey);
     }
 
 }
