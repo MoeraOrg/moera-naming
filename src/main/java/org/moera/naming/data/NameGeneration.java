@@ -6,13 +6,15 @@ import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.moera.naming.rpc.Rules;
+
 @Embeddable
 public class NameGeneration implements Serializable {
 
     private static final long serialVersionUID = -6236816230823929126L;
 
     @NotNull
-    @Size(max=127)
+    @Size(max = Rules.NAME_MAX_LENGTH)
     private String name;
 
     @NotNull

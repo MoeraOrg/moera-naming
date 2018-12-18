@@ -7,6 +7,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.moera.naming.rpc.Rules;
 import org.moera.naming.util.Util;
 
 @Entity
@@ -26,7 +27,7 @@ public class RegisteredName {
     private Timestamp deadline = Util.now();
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = Rules.NODE_URI_MAX_LENGTH)
     private String nodeUri = "";
 
     public NameGeneration getNameGeneration() {
