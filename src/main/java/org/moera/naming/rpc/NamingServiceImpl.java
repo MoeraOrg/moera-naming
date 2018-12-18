@@ -32,6 +32,12 @@ public class NamingServiceImpl implements NamingService {
         if (StringUtils.isEmpty(name)) {
             throw new ServiceException(ServiceError.NAME_EMPTY);
         }
+        if (name.length() > Rules.NAME_MAX_LENGTH) {
+            throw new ServiceException(ServiceError.NAME_TOO_LONG);
+        }
+        if (!Rules.NAME_PATTERN.matcher(name).matches()) {
+            throw new ServiceException(ServiceError.NAME_FORBIDDEN_CHARS);
+        }
         RegisteredName latest = storage.getLatestGeneration(name);
         RegisteredName target;
         if (newGeneration || isForceNewGeneration(latest)) {
