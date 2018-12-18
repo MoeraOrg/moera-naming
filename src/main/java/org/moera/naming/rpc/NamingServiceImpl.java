@@ -1,5 +1,9 @@
 package org.moera.naming.rpc;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.inject.Inject;
@@ -60,11 +64,17 @@ public class NamingServiceImpl implements NamingService {
                 throw new ServiceException(ServiceError.SIGNING_KEY_INVALID_ENCODING);
             }
         }
+        Timestamp now = Util.now();
+        Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : now;
+        if (validFromT.before(now)) {
+            throw new ServiceException(ServiceError.VALID_FROM_IN_PAST);
+        }
+
         RegisteredName latest = storage.getLatestGeneration(name);
         if (newGeneration || isForceNewGeneration(latest)) {
-            putNew(latest, name, updatingKeyD, nodeUri, signingKeyD, validFrom);
+            putNew(latest, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
         } else {
-            putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFrom, signature);
+            putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
         }
 
         return 0;
@@ -76,7 +86,7 @@ public class NamingServiceImpl implements NamingService {
             byte[] updatingKey,
             String nodeUri,
             byte[] signingKey,
-            Long validFrom) {
+            Timestamp validFrom) {
 
         int generation = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
         RegisteredName target = new RegisteredName();
@@ -89,14 +99,9 @@ public class NamingServiceImpl implements NamingService {
         }
         SigningKey targetKey = null;
         if (signingKey != null) {
-            Timestamp now = Util.now();
-            Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : now;
-            if (validFromT.before(now)) {
-                throw new ServiceException(ServiceError.VALID_FROM_IN_PAST);
-            }
             targetKey = new SigningKey();
             targetKey.setSigningKey(signingKey);
-            targetKey.setValidFrom(validFromT);
+            targetKey.setValidFrom(validFrom);
             targetKey.setRegisteredName(target);
         }
         target.setDeadline(Timestamp.from(Instant.now().plus(Rules.REGISTRATION_DURATION)));
@@ -111,10 +116,39 @@ public class NamingServiceImpl implements NamingService {
             byte[] updatingKey,
             String nodeUri,
             byte[] signingKey,
-            Long validFrom,
+            Timestamp validFrom,
             String signature) {
 
         storage.save(target);
+    }
+
+    private void validateSignature(
+            RegisteredName target,
+            SigningKey targetKey,
+            byte[] updatingKey,
+            String nodeUri,
+            byte[] signingKey,
+            Timestamp validFrom,
+            String signature) throws IOException {
+
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(buf, StandardCharsets.UTF_8);
+        writer.write(target.getNameGeneration().getName());
+        writer.write(0);
+        writer.flush();
+        buf.write(updatingKey != null ? updatingKey : target.getUpdatingKey());
+        writer.write(nodeUri != null ? nodeUri : target.getNodeUri());
+        writer.write(0);
+        writer.flush();
+        if (signingKey != null) {
+            buf.write(signingKey);
+            buf.write(Util.toBytes(validFrom.getTime()));
+        } else if (targetKey != null) {
+            buf.write(targetKey.getSigningKey());
+            buf.write(Util.toBytes(targetKey.getValidFrom().getTime()));
+        }
+        // TODO And then convert buf to byte[] and verify signature
+        // throw new ServiceException(ServiceError.SIGNATURE_INVALID);
     }
 
     private boolean isForceNewGeneration(RegisteredName latest) {

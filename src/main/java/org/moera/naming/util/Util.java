@@ -18,4 +18,21 @@ public class Util {
         return Base64.getDecoder().decode(s);
     }
 
+    public static byte[] toBytes(long l) {
+        byte[] bytes = new byte[Long.BYTES];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) (l & 0xff);
+            l = l >> 8;
+        }
+        return bytes;
+    }
+
+    public static long toLong(byte[] bytes) {
+        long l = 0;
+        for (byte b : bytes) {
+            l = (l << 8) | b;
+        }
+        return l;
+    }
+
 }
