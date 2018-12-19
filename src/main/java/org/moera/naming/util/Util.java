@@ -35,4 +35,15 @@ public class Util {
         return l;
     }
 
+    public static String dump(byte[] bytes) {
+        StringBuilder buf = new StringBuilder();
+        for (byte b : bytes) {
+            if (buf.length() > 0) {
+                buf.append(' ');
+            }
+            buf.append(String.format("%02X", b >= 0 ? b : -((int) b)));
+        }
+        return buf.toString();
+    }
+
 }

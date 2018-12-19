@@ -20,6 +20,11 @@ public class Storage {
         return generations.isEmpty() ? null : generations.get(0);
     }
 
+    public SigningKey getLatestKey(NameGeneration nameGeneration) {
+        List<SigningKey> keys = signingKeyRepository.findAllKeys(nameGeneration, PageRequest.of(0, 1));
+        return keys.isEmpty() ? null : keys.get(0);
+    }
+
     public RegisteredName save(RegisteredName registeredName) {
         return registeredNameRepository.save(registeredName);
     }

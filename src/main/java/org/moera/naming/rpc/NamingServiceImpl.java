@@ -1,9 +1,6 @@
 package org.moera.naming.rpc;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.inject.Inject;
@@ -15,6 +12,7 @@ import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
+import org.moera.naming.util.SignatureDataBuilder;
 import org.moera.naming.util.Util;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -71,10 +69,18 @@ public class NamingServiceImpl implements NamingService {
         }
 
         RegisteredName latest = storage.getLatestGeneration(name);
-        if (newGeneration || isForceNewGeneration(latest)) {
+        if (isForceNewGeneration(latest)) {
             putNew(latest, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
         } else {
-            putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
+            // TODO Validate signature
+            // Do not use latest for newGeneration?
+            SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
+            validateSignature(latest, latestKey, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
+            if (newGeneration) {
+                putNew(latest, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
+            } else {
+                putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
+            }
         }
 
         return 0;
@@ -129,23 +135,23 @@ public class NamingServiceImpl implements NamingService {
             String nodeUri,
             byte[] signingKey,
             Timestamp validFrom,
-            String signature) throws IOException {
+            String signature) {
 
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        OutputStreamWriter writer = new OutputStreamWriter(buf, StandardCharsets.UTF_8);
-        writer.write(target.getNameGeneration().getName());
-        writer.write(0);
-        writer.flush();
-        buf.write(updatingKey != null ? updatingKey : target.getUpdatingKey());
-        writer.write(nodeUri != null ? nodeUri : target.getNodeUri());
-        writer.write(0);
-        writer.flush();
-        if (signingKey != null) {
-            buf.write(signingKey);
-            buf.write(Util.toBytes(validFrom.getTime()));
-        } else if (targetKey != null) {
-            buf.write(targetKey.getSigningKey());
-            buf.write(Util.toBytes(targetKey.getValidFrom().getTime()));
+        SignatureDataBuilder buf = new SignatureDataBuilder();
+        try {
+            buf.append(target.getNameGeneration().getName());
+            buf.append(updatingKey != null ? updatingKey : target.getUpdatingKey());
+            buf.append(nodeUri != null ? nodeUri : target.getNodeUri());
+            if (signingKey != null) {
+                buf.append(signingKey);
+                buf.append(validFrom.getTime());
+            } else if (targetKey != null) {
+                buf.append(targetKey.getSigningKey());
+                buf.append(targetKey.getValidFrom().getTime());
+            }
+            System.out.println(Util.dump(buf.toBytes()));
+        } catch (IOException e) {
+            throw new ServiceException(ServiceError.IO_EXCEPTION);
         }
         // TODO And then convert buf to byte[] and verify signature
         // throw new ServiceException(ServiceError.SIGNATURE_INVALID);
