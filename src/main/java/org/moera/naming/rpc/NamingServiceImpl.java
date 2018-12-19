@@ -70,15 +70,16 @@ public class NamingServiceImpl implements NamingService {
 
         RegisteredName latest = storage.getLatestGeneration(name);
         if (isForceNewGeneration(latest)) {
-            putNew(latest, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
+            RegisteredName target = newGeneration(latest, name);
+            putNew(target, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
         } else {
-            // TODO Validate signature
-            // Do not use latest for newGeneration?
-            SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
-            validateSignature(latest, latestKey, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
             if (newGeneration) {
-                putNew(latest, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
+                RegisteredName target = newGeneration(latest, name);
+                validateSignature(target, null, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
+                putNew(target, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
             } else {
+                SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
+                validateSignature(latest, latestKey, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
                 putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
             }
         }
@@ -87,16 +88,13 @@ public class NamingServiceImpl implements NamingService {
     }
 
     private void putNew(
-            RegisteredName latest,
+            RegisteredName target,
             String name,
             byte[] updatingKey,
             String nodeUri,
             byte[] signingKey,
             Timestamp validFrom) {
 
-        int generation = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
-        RegisteredName target = new RegisteredName();
-        target.setNameGeneration(new NameGeneration(name, generation));
         if (!StringUtils.isEmpty(nodeUri)) {
             target.setNodeUri(nodeUri);
         }
@@ -130,7 +128,7 @@ public class NamingServiceImpl implements NamingService {
 
     private void validateSignature(
             RegisteredName target,
-            SigningKey targetKey,
+            SigningKey latestKey,
             byte[] updatingKey,
             String nodeUri,
             byte[] signingKey,
@@ -145,9 +143,9 @@ public class NamingServiceImpl implements NamingService {
             if (signingKey != null) {
                 buf.append(signingKey);
                 buf.append(validFrom.getTime());
-            } else if (targetKey != null) {
-                buf.append(targetKey.getSigningKey());
-                buf.append(targetKey.getValidFrom().getTime());
+            } else if (latestKey != null) {
+                buf.append(latestKey.getSigningKey());
+                buf.append(latestKey.getValidFrom().getTime());
             }
             System.out.println(Util.dump(buf.toBytes()));
         } catch (IOException e) {
@@ -162,6 +160,13 @@ public class NamingServiceImpl implements NamingService {
             return true;
         }
         return latest.getDeadline().before(Util.now());
+    }
+
+    private RegisteredName newGeneration(RegisteredName latest, String name) {
+        int generation = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
+        RegisteredName target = new RegisteredName();
+        target.setNameGeneration(new NameGeneration(name, generation));
+        return target;
     }
 
 }
