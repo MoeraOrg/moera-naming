@@ -64,7 +64,7 @@ public class NamingServiceImpl implements NamingService {
         }
         Timestamp now = Util.now();
         Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : now;
-        if (validFromT.before(now)) {
+        if (validFromT.before(now)) { // FIXME not correct for key updates
             throw new ServiceException(ServiceError.VALID_FROM_IN_PAST);
         }
 
@@ -80,7 +80,7 @@ public class NamingServiceImpl implements NamingService {
             } else {
                 SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
                 validateSignature(latest, latestKey, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
-                putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
+                putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFromT);
             }
         }
 
@@ -98,9 +98,10 @@ public class NamingServiceImpl implements NamingService {
         if (!StringUtils.isEmpty(nodeUri)) {
             target.setNodeUri(nodeUri);
         }
-        if (updatingKey != null) { // FIXME null is error here
-            target.setUpdatingKey(updatingKey);
+        if (updatingKey == null) {
+            throw new ServiceException(ServiceError.UPDATING_KEY_EMPTY);
         }
+        target.setUpdatingKey(updatingKey);
         SigningKey targetKey = null;
         if (signingKey != null) {
             targetKey = new SigningKey();
@@ -120,10 +121,26 @@ public class NamingServiceImpl implements NamingService {
             byte[] updatingKey,
             String nodeUri,
             byte[] signingKey,
-            Timestamp validFrom,
-            String signature) {
+            Timestamp validFrom) {
 
+        if (!StringUtils.isEmpty(nodeUri)) {
+            target.setNodeUri(nodeUri);
+        }
+        if (updatingKey != null) {
+            target.setUpdatingKey(updatingKey);
+        }
+        SigningKey targetKey = null;
+        if (signingKey != null) {
+            targetKey = new SigningKey();
+            targetKey.setSigningKey(signingKey);
+            targetKey.setValidFrom(validFrom); // TODO need to be later than the latest key
+            targetKey.setRegisteredName(target);
+        }
+        target.setDeadline(Timestamp.from(Instant.now().plus(Rules.REGISTRATION_DURATION)));
         storage.save(target);
+        if (targetKey != null) {
+            storage.save(targetKey);
+        }
     }
 
     private void validateSignature(
