@@ -7,8 +7,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.moera.commons.util.Util;
 import org.moera.naming.rpc.Rules;
-import org.moera.naming.util.Util;
 
 @Entity
 @Table(name = "registered_names")

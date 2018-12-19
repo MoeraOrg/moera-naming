@@ -6,14 +6,14 @@ import java.time.Instant;
 import javax.inject.Inject;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
+import org.moera.commons.util.SignatureDataBuilder;
+import org.moera.commons.util.Util;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
-import org.moera.naming.util.SignatureDataBuilder;
-import org.moera.naming.util.Util;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 

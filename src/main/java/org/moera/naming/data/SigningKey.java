@@ -1,7 +1,6 @@
 package org.moera.naming.data;
 
 import java.sql.Timestamp;
-
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Entity;
@@ -14,7 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.moera.naming.util.Util;
+import org.moera.commons.util.Util;
 
 @Entity
 @Table(name = "signing_keys")
