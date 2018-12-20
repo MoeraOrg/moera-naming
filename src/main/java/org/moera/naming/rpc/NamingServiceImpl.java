@@ -45,6 +45,9 @@ public class NamingServiceImpl implements NamingService {
         }
         byte[] updatingKeyD = null;
         if (!StringUtils.isEmpty(updatingKey)) {
+            if (updatingKey.length() > Rules.UPDATING_KEY_MAX_LENGTH) {
+                throw new ServiceException(ServiceError.UPDATING_KEY_TOO_LONG);
+            }
             try {
                 updatingKeyD = Util.base64decode(updatingKey);
             } catch (IllegalArgumentException e) {
@@ -56,6 +59,9 @@ public class NamingServiceImpl implements NamingService {
         }
         byte[] signingKeyD = null;
         if (!StringUtils.isEmpty(signingKey)) {
+            if (signingKey.length() > Rules.SIGNING_KEY_MAX_LENGTH) {
+                throw new ServiceException(ServiceError.SIGNING_KEY_TOO_LONG);
+            }
             try {
                 signingKeyD = Util.base64decode(signingKey);
             } catch (IllegalArgumentException e) {

@@ -11,7 +11,9 @@ public enum ServiceError {
     VALID_FROM_IN_PAST(7, "validFrom of first signing key cannot be in the past"),
     SIGNATURE_INVALID(8, "signature check failed"),
     IO_EXCEPTION(9, "I/O exception occured"),
-    UPDATING_KEY_EMPTY(10, "updatingKey is empty");
+    UPDATING_KEY_EMPTY(10, "updatingKey is empty"),
+    UPDATING_KEY_TOO_LONG(11, "updatingKey is too long"),
+    SIGNING_KEY_TOO_LONG(12, "signingKey is too long");
 
     private int code;
     private String message;
