@@ -1,6 +1,0 @@
-server:
-  port: 8081
-
-spring:
-  jpa:
-    show-sql: true  # Show or not log for each sql query
