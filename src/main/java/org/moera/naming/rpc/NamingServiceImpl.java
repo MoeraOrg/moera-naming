@@ -75,7 +75,7 @@ public class NamingServiceImpl implements NamingService {
         }
 
         RegisteredName latest = storage.getLatestGeneration(name);
-        if (isForceNewGeneration(latest)) {
+        if (isForceNewGeneration(latest, signature)) {
             RegisteredName target = newGeneration(latest, name);
             putNew(target, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
         } else {
@@ -170,7 +170,6 @@ public class NamingServiceImpl implements NamingService {
                 buf.append(latestKey.getSigningKey());
                 buf.append(latestKey.getValidFrom().getTime());
             }
-            System.out.println(Util.dump(buf.toBytes()));
         } catch (IOException e) {
             throw new ServiceException(ServiceError.IO_EXCEPTION);
         }
@@ -178,11 +177,11 @@ public class NamingServiceImpl implements NamingService {
         // throw new ServiceException(ServiceError.SIGNATURE_INVALID);
     }
 
-    private boolean isForceNewGeneration(RegisteredName latest) {
+    private boolean isForceNewGeneration(RegisteredName latest, String signature) {
         if (latest == null) {
             return true;
         }
-        return latest.getDeadline().before(Util.now());
+        return latest.getDeadline().before(Util.now()) && StringUtils.isEmpty(signature);
     }
 
     private RegisteredName newGeneration(RegisteredName latest, String name) {
