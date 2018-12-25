@@ -18,13 +18,13 @@ public class RegisteredName {
     private NameGeneration nameGeneration = new NameGeneration();
 
     @NotNull
-    private byte[] updatingKey = new byte[0];
+    private byte[] updatingKey;
 
     @NotNull
     private Timestamp created = Util.now();
 
     @NotNull
-    private Timestamp deadline = Util.now();
+    private Timestamp deadline;
 
     @NotNull
     @Size(max = Rules.NODE_URI_MAX_LENGTH)

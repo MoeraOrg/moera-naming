@@ -33,10 +33,10 @@ public class SigningKey {
     private RegisteredName registeredName;
 
     @NotNull
-    private byte[] signingKey = new byte[0];
+    private byte[] signingKey;
 
     @NotNull
-    private Timestamp validFrom = Util.now();
+    private Timestamp validFrom;
 
     @NotNull
     private Timestamp created = Util.now();
