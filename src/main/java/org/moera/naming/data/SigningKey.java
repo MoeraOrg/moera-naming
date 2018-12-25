@@ -38,6 +38,9 @@ public class SigningKey {
     @NotNull
     private Timestamp validFrom = Util.now();
 
+    @NotNull
+    private Timestamp created = Util.now();
+
     public long getId() {
         return id;
     }
@@ -68,6 +71,14 @@ public class SigningKey {
 
     public void setValidFrom(Timestamp validFrom) {
         this.validFrom = validFrom;
+    }
+
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
     }
 
 }

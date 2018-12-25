@@ -8,12 +8,14 @@ public enum ServiceError {
     NODE_URI_TOO_LONG(4, "nodeUri is too long"),
     UPDATING_KEY_INVALID_ENCODING(5, "encoding of updatingKey is invalid"),
     SIGNING_KEY_INVALID_ENCODING(6, "encoding of signingKey is invalid"),
-    VALID_FROM_IN_PAST(7, "validFrom of first signing key cannot be in the past"),
+    VALID_FROM_BEFORE_CREATED(7, "validFrom is before name creation"),
     SIGNATURE_INVALID(8, "signature check failed"),
     IO_EXCEPTION(9, "I/O exception occured"),
     UPDATING_KEY_EMPTY(10, "updatingKey is empty"),
     UPDATING_KEY_TOO_LONG(11, "updatingKey is too long"),
-    SIGNING_KEY_TOO_LONG(12, "signingKey is too long");
+    SIGNING_KEY_TOO_LONG(12, "signingKey is too long"),
+    VALID_FROM_EMPTY(13, "validFrom is empty"),
+    VALID_FROM_TOO_FAR_IN_PAST(14, "validFrom is too far in the past");
 
     private int code;
     private String message;

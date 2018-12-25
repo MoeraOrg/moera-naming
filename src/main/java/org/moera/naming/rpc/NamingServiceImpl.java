@@ -67,22 +67,21 @@ public class NamingServiceImpl implements NamingService {
             } catch (IllegalArgumentException e) {
                 throw new ServiceException(ServiceError.SIGNING_KEY_INVALID_ENCODING);
             }
+            if (validFrom == null) {
+                throw new ServiceException(ServiceError.VALID_FROM_EMPTY);
+            }
         }
-        Timestamp now = Util.now();
-        Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : now;
-        if (validFromT.before(now)) { // FIXME not correct for key updates
-            throw new ServiceException(ServiceError.VALID_FROM_IN_PAST);
-        }
+        Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : null;
 
         RegisteredName latest = storage.getLatestGeneration(name);
         if (isForceNewGeneration(latest, signature)) {
             RegisteredName target = newGeneration(latest, name);
-            putNew(target, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
+            putNew(target, updatingKeyD, nodeUri, signingKeyD, validFromT);
         } else {
             if (newGeneration) {
                 RegisteredName target = newGeneration(latest, name);
                 validateSignature(target, null, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
-                putNew(target, name, updatingKeyD, nodeUri, signingKeyD, validFromT);
+                putNew(target, updatingKeyD, nodeUri, signingKeyD, validFromT);
             } else {
                 SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
                 validateSignature(latest, latestKey, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
@@ -95,7 +94,6 @@ public class NamingServiceImpl implements NamingService {
 
     private void putNew(
             RegisteredName target,
-            String name,
             byte[] updatingKey,
             String nodeUri,
             byte[] signingKey,
@@ -110,6 +108,10 @@ public class NamingServiceImpl implements NamingService {
         target.setUpdatingKey(updatingKey);
         SigningKey targetKey = null;
         if (signingKey != null) {
+            if (validFrom.before(target.getCreated())) {
+                throw new ServiceException(ServiceError.VALID_FROM_BEFORE_CREATED);
+            }
+
             targetKey = new SigningKey();
             targetKey.setSigningKey(signingKey);
             targetKey.setValidFrom(validFrom);
@@ -137,6 +139,13 @@ public class NamingServiceImpl implements NamingService {
         }
         SigningKey targetKey = null;
         if (signingKey != null) {
+            if (validFrom.before(target.getCreated())) {
+                throw new ServiceException(ServiceError.VALID_FROM_BEFORE_CREATED);
+            }
+            if (validFrom.before(Timestamp.from(Instant.now().minus(Rules.VALID_FROM_IN_PAST)))) {
+                throw new ServiceException(ServiceError.VALID_FROM_TOO_FAR_IN_PAST);
+            }
+
             targetKey = new SigningKey();
             targetKey.setSigningKey(signingKey);
             targetKey.setValidFrom(validFrom); // TODO need to be later than the latest key
