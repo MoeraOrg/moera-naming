@@ -15,7 +15,7 @@ public class ServiceErrorResolver implements ErrorResolver {
     public JsonError resolveError(Throwable throwable, Method method, List<JsonNode> list) {
         if (throwable instanceof ServiceException) {
             ServiceException e = (ServiceException) throwable;
-            return new JsonError(e.getCode(), e.getMessage(), null);
+            return new JsonError(e.getRpcCode(), e.getMessage(), null);
         }
         return DefaultErrorResolver.INSTANCE.resolveError(throwable, method, list);
     }
