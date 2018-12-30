@@ -13,6 +13,7 @@ import org.moera.commons.util.Util;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
+import org.moera.naming.data.OperationStatus;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
@@ -112,7 +113,27 @@ public class NamingServiceImpl implements NamingService {
     }
 
     @Transactional
-    private void putOperation(
+    private void executeOperation(Operation operation) {
+        try {
+            int generation = executeOperation(
+                    operation.getName(),
+                    operation.isNewGeneration(),
+                    operation.getNodeUri(),
+                    operation.getSignature(),
+                    operation.getUpdatingKey(),
+                    operation.getSigningKey(),
+                    operation.getValidFrom());
+            operation.setStatus(OperationStatus.SUCCEEDED);
+            operation.setGeneration(generation);
+        } catch (ServiceException e) {
+            operation.setStatus(OperationStatus.FAILED);
+            operation.setErrorCode(e.getErrorCode());
+        }
+        operation.setCompleted(Util.now());
+        operationRepository.save(operation);
+    }
+
+    private int executeOperation(
             String name,
             boolean newGeneration,
             String nodeUri,
@@ -121,21 +142,26 @@ public class NamingServiceImpl implements NamingService {
             byte[] signingKey,
             Timestamp validFrom) {
 
+        int generation;
         RegisteredName latest = storage.getLatestGeneration(name);
         if (isForceNewGeneration(latest, signature)) {
             RegisteredName target = newGeneration(latest, name);
+            generation = target.getNameGeneration().getGeneration();
             putNew(target, updatingKey, nodeUri, signingKey, validFrom);
         } else {
             if (newGeneration) {
                 RegisteredName target = newGeneration(latest, name);
+                generation = target.getNameGeneration().getGeneration();
                 validateSignature(target, null, updatingKey, nodeUri, signingKey, validFrom, signature);
                 putNew(target, updatingKey, nodeUri, signingKey, validFrom);
             } else {
+                generation = latest.getNameGeneration().getGeneration();
                 SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
                 validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, signature);
                 putExisting(latest, updatingKey, nodeUri, signingKey, validFrom);
             }
         }
+        return generation;
     }
 
     private void putNew(

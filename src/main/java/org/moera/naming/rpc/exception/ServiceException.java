@@ -13,4 +13,8 @@ public class ServiceException extends RuntimeException {
         return serviceError.getRpcCode();
     }
 
+    public String getErrorCode() {
+        return serviceError.getErrorCode();
+    }
+
 }
