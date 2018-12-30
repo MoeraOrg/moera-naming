@@ -16,7 +16,6 @@ import org.moera.naming.Config;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
-import org.moera.naming.data.OperationStatus;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
@@ -298,6 +297,17 @@ public class NamingServiceImpl implements NamingService {
         RegisteredName target = new RegisteredName();
         target.setNameGeneration(new NameGeneration(name, generation));
         return target;
+    }
+
+    @Override
+    public OperationStatusInfo getStatus(UUID operationId) {
+        Operation operation = operationRepository.findById(operationId).orElse(null);
+        if (operation == null) {
+            OperationStatusInfo info = new OperationStatusInfo();
+            info.setErrorCode("unknown");
+            return info;
+        }
+        return operation.toOperationStatusInfo();
     }
 
 }

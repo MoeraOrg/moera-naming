@@ -13,6 +13,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.moera.commons.util.Util;
+import org.moera.naming.rpc.OperationStatus;
+import org.moera.naming.rpc.OperationStatusInfo;
 
 @Entity
 @Table(name = "operations")
@@ -177,6 +179,17 @@ public class Operation {
 
     public void setGeneration(Integer generation) {
         this.generation = generation;
+    }
+
+    public OperationStatusInfo toOperationStatusInfo() {
+        OperationStatusInfo info = new OperationStatusInfo();
+        info.setOperationId(getId());
+        info.setStatus(getStatus());
+        info.setAdded(getAdded());
+        info.setCompleted(getCompleted());
+        info.setErrorCode(getErrorCode());
+        info.setGeneration(getGeneration());
+        return info;
     }
 
 }
