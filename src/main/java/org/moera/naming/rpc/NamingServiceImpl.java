@@ -3,13 +3,16 @@ package org.moera.naming.rpc;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.moera.commons.util.SignatureDataBuilder;
 import org.moera.commons.util.Util;
+import org.moera.naming.Config;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
@@ -19,6 +22,8 @@ import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -27,10 +32,20 @@ import org.springframework.util.StringUtils;
 public class NamingServiceImpl implements NamingService {
 
     @Inject
+    private Config config;
+
+    @Inject
     private Storage storage;
 
     @Inject
     private OperationRepository operationRepository;
+
+    private int operationRunCapacity;
+
+    @PostConstruct
+    public void init() {
+        operationRunCapacity = config.getMaxOperationRate();
+    }
 
     @Override
     public UUID put(
@@ -110,6 +125,19 @@ public class NamingServiceImpl implements NamingService {
         Operation operation = new Operation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFrom);
         operationRepository.save(operation);
         return operation.getId();
+    }
+
+    @Scheduled(fixedDelayString = "PT1M") // every minute
+    public void runOperationQueue() {
+        operationRunCapacity += config.getAverageOperationRate();
+        if (operationRunCapacity > config.getMaxOperationRate()) {
+            operationRunCapacity = config.getMaxOperationRate();
+        }
+
+        List<Operation> operations = operationRepository.findAllByStatusOrderByAdded(OperationStatus.ADDED,
+                PageRequest.of(0, operationRunCapacity));
+        operationRunCapacity -= operations.size();
+        operations.forEach(this::executeOperation);
     }
 
     @Transactional
