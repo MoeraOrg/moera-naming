@@ -14,8 +14,9 @@ public enum ServiceError {
     VALID_FROM_EMPTY(10, "valid-from.empty", "validFrom is empty"),
     VALID_FROM_BEFORE_CREATED(11, "valid-from.before-name-created", "validFrom is before name creation"),
     VALID_FROM_TOO_FAR_IN_PAST(12, "valid-from.too-far-in-past", "validFrom is too far in the past"),
-    SIGNATURE_INVALID(13, "signature.failed", "signature check failed"),
-    IO_EXCEPTION(14, "io.failure", "I/O exception occured");
+    SIGNATURE_INVALID_ENCODING(13, "signature.invalid-encoding", "encoding of signature is invalid"),
+    SIGNATURE_INVALID(14, "signature.failed", "signature check failed"),
+    IO_EXCEPTION(15, "io.failure", "I/O exception occured");
 
     private int rpcCode;
     private String errorCode;

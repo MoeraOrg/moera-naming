@@ -3,12 +3,16 @@ package org.moera.naming.rpc;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.UUID;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.moera.commons.util.SignatureDataBuilder;
 import org.moera.commons.util.Util;
 import org.moera.naming.data.NameGeneration;
+import org.moera.naming.data.Operation;
+import org.moera.naming.data.OperationRepository;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
@@ -24,8 +28,11 @@ public class NamingServiceImpl implements NamingService {
     @Inject
     private Storage storage;
 
+    @Inject
+    private OperationRepository operationRepository;
+
     @Override
-    public long put(
+    public UUID put(
             String name,
             boolean newGeneration,
             String updatingKey,
@@ -53,6 +60,8 @@ public class NamingServiceImpl implements NamingService {
             } catch (IllegalArgumentException e) {
                 throw new ServiceException(ServiceError.UPDATING_KEY_INVALID_ENCODING);
             }
+        } else if (newGeneration) { // this case we can detect early
+            throw new ServiceException(ServiceError.UPDATING_KEY_EMPTY);
         }
         if (nodeUri != null && nodeUri.length() > Rules.NODE_URI_MAX_LENGTH) {
             throw new ServiceException(ServiceError.NODE_URI_TOO_LONG);
@@ -72,24 +81,61 @@ public class NamingServiceImpl implements NamingService {
             }
         }
         Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : null;
+        byte[] signatureD = null;
+        if (!StringUtils.isEmpty(signature)) {
+            /* TODO if (signature.length() > Rules.SIGNATURE_MAX_LENGTH) {
+                throw new ServiceException(ServiceError.SIGNATURE_KEY_TOO_LONG);
+            }*/
+            try {
+                signatureD = Util.base64decode(signature);
+            } catch (IllegalArgumentException e) {
+                throw new ServiceException(ServiceError.SIGNATURE_INVALID_ENCODING);
+            }
+        }
+
+        return addOperation(name, newGeneration, nodeUri, signatureD, updatingKeyD, signingKeyD, validFromT);
+    }
+
+    @Transactional
+    private UUID addOperation(
+            String name,
+            boolean newGeneration,
+            String nodeUri,
+            byte[] signature,
+            byte[] updatingKey,
+            byte[] signingKey,
+            Timestamp validFrom) {
+
+        Operation operation = new Operation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFrom);
+        operationRepository.save(operation);
+        return operation.getId();
+    }
+
+    @Transactional
+    private void putOperation(
+            String name,
+            boolean newGeneration,
+            String nodeUri,
+            byte[] signature,
+            byte[] updatingKey,
+            byte[] signingKey,
+            Timestamp validFrom) {
 
         RegisteredName latest = storage.getLatestGeneration(name);
         if (isForceNewGeneration(latest, signature)) {
             RegisteredName target = newGeneration(latest, name);
-            putNew(target, updatingKeyD, nodeUri, signingKeyD, validFromT);
+            putNew(target, updatingKey, nodeUri, signingKey, validFrom);
         } else {
             if (newGeneration) {
                 RegisteredName target = newGeneration(latest, name);
-                validateSignature(target, null, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
-                putNew(target, updatingKeyD, nodeUri, signingKeyD, validFromT);
+                validateSignature(target, null, updatingKey, nodeUri, signingKey, validFrom, signature);
+                putNew(target, updatingKey, nodeUri, signingKey, validFrom);
             } else {
                 SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
-                validateSignature(latest, latestKey, updatingKeyD, nodeUri, signingKeyD, validFromT, signature);
-                putExisting(latest, updatingKeyD, nodeUri, signingKeyD, validFromT);
+                validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, signature);
+                putExisting(latest, updatingKey, nodeUri, signingKey, validFrom);
             }
         }
-
-        return 0;
     }
 
     private void putNew(
@@ -148,7 +194,7 @@ public class NamingServiceImpl implements NamingService {
 
             targetKey = new SigningKey();
             targetKey.setSigningKey(signingKey);
-            targetKey.setValidFrom(validFrom); // TODO need to be later than the latest key
+            targetKey.setValidFrom(validFrom);
             targetKey.setRegisteredName(target);
         }
         target.setDeadline(Timestamp.from(Instant.now().plus(Rules.REGISTRATION_DURATION)));
@@ -165,7 +211,7 @@ public class NamingServiceImpl implements NamingService {
             String nodeUri,
             byte[] signingKey,
             Timestamp validFrom,
-            String signature) {
+            byte[] signature) {
 
         SignatureDataBuilder buf = new SignatureDataBuilder();
         try {
@@ -186,7 +232,7 @@ public class NamingServiceImpl implements NamingService {
         // throw new ServiceException(ServiceError.SIGNATURE_INVALID);
     }
 
-    private boolean isForceNewGeneration(RegisteredName latest, String signature) {
+    private boolean isForceNewGeneration(RegisteredName latest, byte[] signature) {
         if (latest == null) {
             return true;
         }
