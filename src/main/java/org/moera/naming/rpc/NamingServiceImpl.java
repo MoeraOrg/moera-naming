@@ -1,6 +1,8 @@
 package org.moera.naming.rpc;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.Signature;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -10,6 +12,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
+import org.moera.commons.util.CryptoUtil;
 import org.moera.commons.util.SignatureDataBuilder;
 import org.moera.commons.util.Util;
 import org.moera.naming.Config;
@@ -21,6 +24,8 @@ import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,6 +34,8 @@ import org.springframework.util.StringUtils;
 @Component
 @AutoJsonRpcServiceImpl
 public class NamingServiceImpl implements NamingService {
+
+    private static Logger log = LoggerFactory.getLogger(NamingServiceImpl.class);
 
     @Inject
     private Config config;
@@ -266,6 +273,7 @@ public class NamingServiceImpl implements NamingService {
             Timestamp validFrom,
             byte[] signature) {
 
+        byte[] signatureData;
         SignatureDataBuilder buf = new SignatureDataBuilder();
         try {
             buf.append(target.getNameGeneration().getName());
@@ -278,11 +286,22 @@ public class NamingServiceImpl implements NamingService {
                 buf.append(latestKey.getSigningKey());
                 buf.append(latestKey.getValidFrom().getTime());
             }
+            signatureData = buf.toBytes();
         } catch (IOException e) {
             throw new ServiceException(ServiceError.IO_EXCEPTION);
         }
-        // TODO And then convert buf to byte[] and verify signature
-        // throw new ServiceException(ServiceError.SIGNATURE_INVALID);
+
+        try {
+            Signature sign = Signature.getInstance(Rules.SIGNATURE_ALGORITHM, "BC");
+            sign.initVerify(CryptoUtil.toPublicKey(target.getUpdatingKey()));
+            sign.update(signatureData);
+            if (!sign.verify(signature)) {
+                throw new ServiceException(ServiceError.SIGNATURE_INVALID);
+            }
+        } catch (GeneralSecurityException e) {
+            log.error("Crypto exception:", e);
+            throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);
+        }
     }
 
     private boolean isForceNewGeneration(RegisteredName latest, byte[] signature) {
@@ -308,6 +327,25 @@ public class NamingServiceImpl implements NamingService {
             return info;
         }
         return operation.toOperationStatusInfo();
+    }
+
+    @Override
+    public RegisteredNameInfo getCurrent(String name) {
+        RegisteredName latest = storage.getLatestGeneration(name);
+        if (latest == null) {
+            return null;
+        }
+        RegisteredNameInfo info = new RegisteredNameInfo();
+        info.setName(latest.getNameGeneration().getName());
+        info.setGeneration(latest.getNameGeneration().getGeneration());
+        info.setUpdatingKey(Util.base64encode(latest.getUpdatingKey()));
+        info.setNodeUri(latest.getNodeUri());
+        SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
+        if (latestKey != null) {
+            info.setSigningKey(Util.base64encode(latestKey.getSigningKey()));
+            info.setValidFrom(latestKey.getValidFrom().getTime());
+        }
+        return info;
     }
 
 }

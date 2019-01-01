@@ -16,7 +16,8 @@ public enum ServiceError {
     VALID_FROM_TOO_FAR_IN_PAST(12, "valid-from.too-far-in-past", "validFrom is too far in the past"),
     SIGNATURE_INVALID_ENCODING(13, "signature.invalid-encoding", "encoding of signature is invalid"),
     SIGNATURE_INVALID(14, "signature.failed", "signature check failed"),
-    IO_EXCEPTION(15, "io.failure", "I/O exception occured");
+    IO_EXCEPTION(15, "io.failure", "I/O exception occured"),
+    CRYPTO_EXCEPTION(16, "crypto.failure", "Crypto configuration exception occured");
 
     private int rpcCode;
     private String errorCode;
