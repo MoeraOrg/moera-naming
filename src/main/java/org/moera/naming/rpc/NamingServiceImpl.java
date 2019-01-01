@@ -13,7 +13,6 @@ import javax.transaction.Transactional;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.moera.commons.util.CryptoUtil;
-import org.moera.commons.util.SignatureDataBuilder;
 import org.moera.commons.util.Util;
 import org.moera.naming.Config;
 import org.moera.naming.data.NameGeneration;
@@ -273,25 +272,25 @@ public class NamingServiceImpl implements NamingService {
             Timestamp validFrom,
             byte[] signature) {
 
-        byte[] signatureData;
-        SignatureDataBuilder buf = new SignatureDataBuilder();
         try {
-            buf.append(target.getNameGeneration().getName());
-            buf.append(updatingKey != null ? updatingKey : target.getUpdatingKey());
-            buf.append(nodeUri != null ? nodeUri : target.getNodeUri());
-            if (signingKey != null) {
-                buf.append(signingKey);
-                buf.append(validFrom.getTime());
-            } else if (latestKey != null) {
-                buf.append(latestKey.getSigningKey());
-                buf.append(latestKey.getValidFrom().getTime());
-            }
-            signatureData = buf.toBytes();
-        } catch (IOException e) {
-            throw new ServiceException(ServiceError.IO_EXCEPTION);
-        }
+            byte[] eSigningKey = null;
+            long eValidFrom = 0;
 
-        try {
+            if (signingKey != null) {
+                eSigningKey = signingKey;
+                eValidFrom = validFrom.getTime();
+            } else if (latestKey != null) {
+                eSigningKey = latestKey.getSigningKey();
+                eValidFrom = latestKey.getValidFrom().getTime();
+            }
+
+            byte[] signatureData = new PutSignatureDataBuilder(
+                    target.getNameGeneration().getName(),
+                    updatingKey != null ? updatingKey : target.getUpdatingKey(),
+                    nodeUri != null ? nodeUri : target.getNodeUri(),
+                    eSigningKey,
+                    eValidFrom).toBytes();
+
             Signature sign = Signature.getInstance(Rules.SIGNATURE_ALGORITHM, "BC");
             sign.initVerify(CryptoUtil.toPublicKey(target.getUpdatingKey()));
             sign.update(signatureData);
@@ -301,6 +300,8 @@ public class NamingServiceImpl implements NamingService {
         } catch (GeneralSecurityException e) {
             log.error("Crypto exception:", e);
             throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);
+        } catch (IOException e) {
+            throw new ServiceException(ServiceError.IO_EXCEPTION);
         }
     }
 
