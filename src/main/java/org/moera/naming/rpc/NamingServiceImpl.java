@@ -288,6 +288,7 @@ public class NamingServiceImpl implements NamingService {
                     target.getNameGeneration().getName(),
                     updatingKey != null ? updatingKey : target.getUpdatingKey(),
                     nodeUri != null ? nodeUri : target.getNodeUri(),
+                    target.getDeadline().getTime(),
                     eSigningKey,
                     eValidFrom).toBytes();
 
@@ -341,6 +342,7 @@ public class NamingServiceImpl implements NamingService {
         info.setGeneration(latest.getNameGeneration().getGeneration());
         info.setUpdatingKey(Util.base64encode(latest.getUpdatingKey()));
         info.setNodeUri(latest.getNodeUri());
+        info.setDeadline(latest.getDeadline().getTime());
         SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
         if (latestKey != null) {
             info.setSigningKey(Util.base64encode(latestKey.getSigningKey()));
