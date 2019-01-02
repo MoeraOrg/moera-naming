@@ -56,11 +56,11 @@ public class NamingServiceImpl implements NamingService {
     public UUID put(
             String name,
             boolean newGeneration,
-            String updatingKey,
+            byte[] updatingKey,
             String nodeUri,
-            String signingKey,
+            byte[] signingKey,
             Long validFrom,
-            String signature) {
+            byte[] signature) {
 
         if (StringUtils.isEmpty(name)) {
             throw new ServiceException(ServiceError.NAME_EMPTY);
@@ -71,15 +71,9 @@ public class NamingServiceImpl implements NamingService {
         if (!Rules.NAME_PATTERN.matcher(name).matches()) {
             throw new ServiceException(ServiceError.NAME_FORBIDDEN_CHARS);
         }
-        byte[] updatingKeyD = null;
-        if (!StringUtils.isEmpty(updatingKey)) {
-            if (updatingKey.length() > Rules.UPDATING_KEY_MAX_LENGTH) {
+        if (updatingKey != null) {
+            if (updatingKey.length > Rules.UPDATING_KEY_MAX_LENGTH) {
                 throw new ServiceException(ServiceError.UPDATING_KEY_TOO_LONG);
-            }
-            try {
-                updatingKeyD = Util.base64decode(updatingKey);
-            } catch (IllegalArgumentException e) {
-                throw new ServiceException(ServiceError.UPDATING_KEY_INVALID_ENCODING);
             }
         } else if (newGeneration) { // this case we can detect early
             throw new ServiceException(ServiceError.UPDATING_KEY_EMPTY);
@@ -87,34 +81,20 @@ public class NamingServiceImpl implements NamingService {
         if (nodeUri != null && nodeUri.length() > Rules.NODE_URI_MAX_LENGTH) {
             throw new ServiceException(ServiceError.NODE_URI_TOO_LONG);
         }
-        byte[] signingKeyD = null;
-        if (!StringUtils.isEmpty(signingKey)) {
-            if (signingKey.length() > Rules.SIGNING_KEY_MAX_LENGTH) {
+        if (signingKey != null) {
+            if (signingKey.length > Rules.SIGNING_KEY_MAX_LENGTH) {
                 throw new ServiceException(ServiceError.SIGNING_KEY_TOO_LONG);
-            }
-            try {
-                signingKeyD = Util.base64decode(signingKey);
-            } catch (IllegalArgumentException e) {
-                throw new ServiceException(ServiceError.SIGNING_KEY_INVALID_ENCODING);
             }
             if (validFrom == null) {
                 throw new ServiceException(ServiceError.VALID_FROM_EMPTY);
             }
         }
         Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : null;
-        byte[] signatureD = null;
-        if (!StringUtils.isEmpty(signature)) {
-            /* TODO if (signature.length() > Rules.SIGNATURE_MAX_LENGTH) {
-                throw new ServiceException(ServiceError.SIGNATURE_KEY_TOO_LONG);
-            }*/
-            try {
-                signatureD = Util.base64decode(signature);
-            } catch (IllegalArgumentException e) {
-                throw new ServiceException(ServiceError.SIGNATURE_INVALID_ENCODING);
-            }
+        if (signature != null && signature.length > Rules.SIGNATURE_MAX_LENGTH) {
+            throw new ServiceException(ServiceError.SIGNATURE_KEY_TOO_LONG);
         }
 
-        return addOperation(name, newGeneration, nodeUri, signatureD, updatingKeyD, signingKeyD, validFromT);
+        return addOperation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFromT);
     }
 
     @Transactional
