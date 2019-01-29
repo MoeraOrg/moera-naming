@@ -11,4 +11,7 @@ public interface RegisteredNameRepository extends JpaRepository<RegisteredName, 
     @Query("select r from RegisteredName r where r.nameGeneration.name=?1 order by r.nameGeneration.generation desc")
     List<RegisteredName> findAllGenerations(String name, Pageable page);
 
+    @Query("select max(r.nameGeneration.generation) from RegisteredName r where r.nameGeneration.name=?1")
+    Integer findLatestGenerationNumber(String name);
+
 }

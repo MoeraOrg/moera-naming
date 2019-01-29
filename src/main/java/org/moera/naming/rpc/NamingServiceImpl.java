@@ -312,18 +312,33 @@ public class NamingServiceImpl implements NamingService {
     }
 
     @Override
-    public RegisteredNameInfo getCurrent(String name) {
-        RegisteredName latest = storage.getLatestGeneration(name);
-        if (latest == null) {
+    public RegisteredNameInfo getCurrent(String name, int generation) {
+        RegisteredName registeredName = storage.get(name, generation);
+        if (registeredName == null) {
             return null;
         }
+        Integer latestGeneration = storage.getLatestGenerationNumber(name);
+        return getRegisteredNameInfo(registeredName, latestGeneration == generation);
+    }
+
+    @Override
+    public RegisteredNameInfo getCurrentForLatest(String name) {
+        RegisteredName registeredName = storage.getLatestGeneration(name);
+        if (registeredName == null) {
+            return null;
+        }
+        return getRegisteredNameInfo(registeredName, true);
+    }
+
+    private RegisteredNameInfo getRegisteredNameInfo(RegisteredName registeredName, boolean latest) {
         RegisteredNameInfo info = new RegisteredNameInfo();
-        info.setName(latest.getNameGeneration().getName());
-        info.setGeneration(latest.getNameGeneration().getGeneration());
-        info.setUpdatingKey(Util.base64encode(latest.getUpdatingKey()));
-        info.setNodeUri(latest.getNodeUri());
-        info.setDeadline(latest.getDeadline().getTime());
-        SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
+        info.setName(registeredName.getNameGeneration().getName());
+        info.setGeneration(registeredName.getNameGeneration().getGeneration());
+        info.setLatest(latest);
+        info.setUpdatingKey(Util.base64encode(registeredName.getUpdatingKey()));
+        info.setNodeUri(registeredName.getNodeUri());
+        info.setDeadline(registeredName.getDeadline().getTime());
+        SigningKey latestKey = storage.getLatestKey(registeredName.getNameGeneration());
         if (latestKey != null) {
             info.setSigningKey(Util.base64encode(latestKey.getSigningKey()));
             info.setValidFrom(latestKey.getValidFrom().getTime());

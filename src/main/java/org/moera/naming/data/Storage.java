@@ -15,9 +15,17 @@ public class Storage {
     @Inject
     private SigningKeyRepository signingKeyRepository;
 
+    public RegisteredName get(String name, int generation) {
+        return registeredNameRepository.findById(new NameGeneration(name, generation)).orElse(null);
+    }
+
     public RegisteredName getLatestGeneration(String name) {
         List<RegisteredName> generations = registeredNameRepository.findAllGenerations(name, PageRequest.of(0, 1));
         return generations.isEmpty() ? null : generations.get(0);
+    }
+
+    public Integer getLatestGenerationNumber(String name) {
+        return registeredNameRepository.findLatestGenerationNumber(name);
     }
 
     public SigningKey getLatestKey(NameGeneration nameGeneration) {

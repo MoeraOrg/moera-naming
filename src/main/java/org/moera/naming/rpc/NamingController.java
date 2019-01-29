@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
 import org.moera.naming.rpc.exception.ServiceErrorResolver;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
@@ -31,6 +32,7 @@ public class NamingController {
         jsonRpcServer.setErrorResolver(serviceErrorResolver);
     }
 
+    @CrossOrigin("*")
     @PostMapping("/moera-naming")
     public void naming(HttpServletRequest request, HttpServletResponse response) throws IOException {
         jsonRpcServer.handle(request, response);
