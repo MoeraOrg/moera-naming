@@ -12,6 +12,9 @@ public class Config {
     @Value("${naming.operation-rate.max}")
     private int maxOperationRate;
 
+    @Value("${naming.mock-network-latency}")
+    private boolean mockNetworkLatency;
+
     public int getAverageOperationRate() {
         return averageOperationRate;
     }
@@ -26,6 +29,14 @@ public class Config {
 
     public void setMaxOperationRate(int maxOperationRate) {
         this.maxOperationRate = maxOperationRate;
+    }
+
+    public boolean isMockNetworkLatency() {
+        return mockNetworkLatency;
+    }
+
+    public void setMockNetworkLatency(boolean mockNetworkLatency) {
+        this.mockNetworkLatency = mockNetworkLatency;
     }
 
 }

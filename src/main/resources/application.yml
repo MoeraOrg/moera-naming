@@ -32,3 +32,5 @@ naming:
   operation-rate: # Operations per minute
     average: 1
     max: 20
+
+  mock-network-latency: false
