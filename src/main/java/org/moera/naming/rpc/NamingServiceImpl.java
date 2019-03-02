@@ -72,8 +72,8 @@ public class NamingServiceImpl implements NamingService {
             throw new ServiceException(ServiceError.NAME_FORBIDDEN_CHARS);
         }
         if (updatingKey != null) {
-            if (updatingKey.length > Rules.UPDATING_KEY_MAX_LENGTH) {
-                throw new ServiceException(ServiceError.UPDATING_KEY_TOO_LONG);
+            if (updatingKey.length != Rules.PUBLIC_KEY_LENGTH) {
+                throw new ServiceException(ServiceError.UPDATING_KEY_WRONG_LENGTH);
             }
         } else if (newGeneration) { // this case we can detect early
             throw new ServiceException(ServiceError.UPDATING_KEY_EMPTY);
@@ -82,8 +82,8 @@ public class NamingServiceImpl implements NamingService {
             throw new ServiceException(ServiceError.NODE_URI_TOO_LONG);
         }
         if (signingKey != null) {
-            if (signingKey.length > Rules.SIGNING_KEY_MAX_LENGTH) {
-                throw new ServiceException(ServiceError.SIGNING_KEY_TOO_LONG);
+            if (signingKey.length != Rules.PUBLIC_KEY_LENGTH) {
+                throw new ServiceException(ServiceError.SIGNING_KEY_WRONG_LENGTH);
             }
             if (validFrom == null) {
                 throw new ServiceException(ServiceError.VALID_FROM_EMPTY);
@@ -91,7 +91,7 @@ public class NamingServiceImpl implements NamingService {
         }
         Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : null;
         if (signature != null && signature.length > Rules.SIGNATURE_MAX_LENGTH) {
-            throw new ServiceException(ServiceError.SIGNATURE_KEY_TOO_LONG);
+            throw new ServiceException(ServiceError.SIGNATURE_TOO_LONG);
         }
 
         return addOperation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFromT);
