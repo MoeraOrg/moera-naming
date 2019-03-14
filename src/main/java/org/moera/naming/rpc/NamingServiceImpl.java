@@ -23,6 +23,7 @@ import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.Storage;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
+import org.moera.naming.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -61,6 +62,11 @@ public class NamingServiceImpl implements NamingService {
             byte[] signingKey,
             Long validFrom,
             byte[] signature) {
+
+        log.info("put(): name = {}, newGeneration = {}, updatingKey = {}, nodeUri = {},"
+                + " signingKey = {}, validFrom = {}, signature = {}",
+                LogUtil.format(name), newGeneration, LogUtil.format(updatingKey), LogUtil.format(nodeUri),
+                LogUtil.format(signingKey), LogUtil.formatTimestamp(validFrom), LogUtil.format(signature));
 
         if (StringUtils.isEmpty(name)) {
             throw new ServiceException(ServiceError.NAME_EMPTY);
@@ -109,6 +115,8 @@ public class NamingServiceImpl implements NamingService {
 
         Operation operation = new Operation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFrom);
         operationRepository.save(operation);
+
+        log.info("Added operation {}", operation.getId());
         return operation.getId();
     }
 
@@ -118,6 +126,7 @@ public class NamingServiceImpl implements NamingService {
         if (operationRunCapacity > config.getMaxOperationRate()) {
             operationRunCapacity = config.getMaxOperationRate();
         }
+        log.debug("Fetching up to {} operations", operationRunCapacity);
 
         List<Operation> operations = operationRepository.findAllByStatusOrderByAdded(OperationStatus.ADDED,
                 PageRequest.of(0, operationRunCapacity));
@@ -128,6 +137,7 @@ public class NamingServiceImpl implements NamingService {
     @Transactional
     private void executeOperation(Operation operation) {
         try {
+            log.info("Executing operation {}", operation.getId());
             int generation = executeOperation(
                     operation.getName(),
                     operation.isNewGeneration(),
@@ -136,9 +146,11 @@ public class NamingServiceImpl implements NamingService {
                     operation.getUpdatingKey(),
                     operation.getSigningKey(),
                     operation.getValidFrom());
+            log.info("Operation {} SUCCEEDED", operation.getId());
             operation.setStatus(OperationStatus.SUCCEEDED);
             operation.setGeneration(generation);
         } catch (ServiceException e) {
+            log.warn("Operation {} FAILED, error code = {}", operation.getId(), e.getErrorCode());
             operation.setStatus(OperationStatus.FAILED);
             operation.setErrorCode(e.getErrorCode());
         }
@@ -158,6 +170,8 @@ public class NamingServiceImpl implements NamingService {
         int generation;
         RegisteredName latest = storage.getLatestGeneration(name);
         if (isForceNewGeneration(latest, signature)) {
+            log.debug("Forcing new generation");
+
             RegisteredName target = newGeneration(latest, name);
             generation = target.getNameGeneration().getGeneration();
             putNew(target, updatingKey, nodeUri, signingKey, validFrom);
@@ -183,6 +197,9 @@ public class NamingServiceImpl implements NamingService {
             String nodeUri,
             byte[] signingKey,
             Timestamp validFrom) {
+
+        log.info("putNew(): name = {}, generation = {}",
+                LogUtil.format(target.getNameGeneration().getName()), target.getNameGeneration().getGeneration());
 
         if (!StringUtils.isEmpty(nodeUri)) {
             target.setNodeUri(nodeUri);
@@ -215,6 +232,9 @@ public class NamingServiceImpl implements NamingService {
             String nodeUri,
             byte[] signingKey,
             Timestamp validFrom) {
+
+        log.info("putExisting(): name = {}, generation = {}",
+                LogUtil.format(target.getNameGeneration().getName()), target.getNameGeneration().getGeneration());
 
         if (!StringUtils.isEmpty(nodeUri)) {
             target.setNodeUri(nodeUri);
@@ -272,6 +292,9 @@ public class NamingServiceImpl implements NamingService {
                     eSigningKey,
                     eValidFrom).toBytes();
 
+            log.debug("Verifying signature: data = {}, signature = {}, target updatingKey = {}",
+                    LogUtil.format(signatureData), LogUtil.format(signature), LogUtil.format(target.getUpdatingKey()));
+
             Signature sign = Signature.getInstance(Rules.SIGNATURE_ALGORITHM, "BC");
             sign.initVerify(CryptoUtil.toPublicKey(target.getUpdatingKey()));
             sign.update(signatureData);
@@ -302,8 +325,12 @@ public class NamingServiceImpl implements NamingService {
 
     @Override
     public OperationStatusInfo getStatus(UUID operationId) {
+        log.info("getStatus(): operationId = {}", LogUtil.format(operationId));
+
         Operation operation = operationRepository.findById(operationId).orElse(null);
         if (operation == null) {
+            log.info("No such operation");
+
             OperationStatusInfo info = new OperationStatusInfo();
             info.setErrorCode("unknown");
             return info;
@@ -313,8 +340,11 @@ public class NamingServiceImpl implements NamingService {
 
     @Override
     public RegisteredNameInfo getCurrent(String name, int generation) {
+        log.info("getCurrent(): name = {}, generation = {}", LogUtil.format(name), generation);
+
         RegisteredName registeredName = storage.get(name, generation);
         if (registeredName == null) {
+            log.info("Name/generation is not found");
             return null;
         }
         Integer latestGeneration = storage.getLatestGenerationNumber(name);
@@ -323,8 +353,11 @@ public class NamingServiceImpl implements NamingService {
 
     @Override
     public RegisteredNameInfo getCurrentForLatest(String name) {
+        log.info("getCurrentForLatest(): name = {}", LogUtil.format(name));
+
         RegisteredName registeredName = storage.getLatestGeneration(name);
         if (registeredName == null) {
+            log.info("Name is not found");
             return null;
         }
         return getRegisteredNameInfo(registeredName, true);

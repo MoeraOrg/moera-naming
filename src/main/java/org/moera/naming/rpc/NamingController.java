@@ -11,12 +11,16 @@ import com.googlecode.jsonrpc4j.JsonRpcServer;
 import org.moera.naming.Config;
 import org.moera.naming.rpc.exception.ServiceErrorResolver;
 import org.moera.naming.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class NamingController {
+
+    private static Logger log = LoggerFactory.getLogger(NamingController.class);
 
     private JsonRpcServer jsonRpcServer;
 
@@ -35,6 +39,11 @@ public class NamingController {
         jsonRpcServer.setAllowExtraParams(true);
         jsonRpcServer.setAllowLessParams(true);
         jsonRpcServer.setErrorResolver(serviceErrorResolver);
+
+        if (config.isMockNetworkLatency()) {
+            log.info("Emulation of network latency is enabled."
+                    + " Random delay of 200ms up to 2s will be added to all responses");
+        }
     }
 
     @CrossOrigin("*")
