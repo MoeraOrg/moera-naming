@@ -1,8 +1,13 @@
-package org.moera.naming.data;
+package org.moera.naming.registry;
 
 import java.util.List;
 import javax.inject.Inject;
 
+import org.moera.naming.data.NameGeneration;
+import org.moera.naming.data.RegisteredName;
+import org.moera.naming.data.RegisteredNameRepository;
+import org.moera.naming.data.SigningKey;
+import org.moera.naming.data.SigningKeyRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
