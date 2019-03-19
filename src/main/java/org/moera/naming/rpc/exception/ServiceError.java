@@ -15,7 +15,9 @@ public enum ServiceError {
     SIGNATURE_TOO_LONG(11, "signature.too-long", "signature is too long"),
     SIGNATURE_INVALID(12, "signature.failed", "signature check failed"),
     IO_EXCEPTION(13, "io.failure", "I/O exception occured"),
-    CRYPTO_EXCEPTION(14, "crypto.failure", "Crypto configuration exception occured");
+    CRYPTO_EXCEPTION(14, "crypto.failure", "Crypto configuration exception occured"),
+    PREVIOUS_DIGEST_WRONG_LENGTH(15, "previous-digest.wrong-length", "previousDigest has wrong length"),
+    PREVIOUS_DIGEST_INCORRECT(16, "previous-digest.incorrect", "previousDigest differs from the current one");
 
     private int rpcCode;
     private String errorCode;

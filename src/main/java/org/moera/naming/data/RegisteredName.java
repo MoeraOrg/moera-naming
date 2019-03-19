@@ -30,6 +30,9 @@ public class RegisteredName {
     @Size(max = Rules.NODE_URI_MAX_LENGTH)
     private String nodeUri = "";
 
+    @NotNull
+    private byte[] digest;
+
     public NameGeneration getNameGeneration() {
         return nameGeneration;
     }
@@ -68,6 +71,14 @@ public class RegisteredName {
 
     public void setNodeUri(String nodeUri) {
         this.nodeUri = nodeUri;
+    }
+
+    public byte[] getDigest() {
+        return digest;
+    }
+
+    public void setDigest(byte[] digest) {
+        this.digest = digest;
     }
 
 }

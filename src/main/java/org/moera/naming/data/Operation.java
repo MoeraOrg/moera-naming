@@ -42,6 +42,8 @@ public class Operation {
 
     private Timestamp validFrom;
 
+    private byte[] previousDigest;
+
     @NotNull
     @Enumerated(EnumType.ORDINAL)
     private OperationStatus status = OperationStatus.ADDED;
@@ -65,7 +67,8 @@ public class Operation {
             byte[] signature,
             byte[] updatingKey,
             byte[] signingKey,
-            Timestamp validFrom) {
+            Timestamp validFrom,
+            byte[] previousDigest) {
 
         id = UUID.randomUUID();
         this.name = name;
@@ -75,6 +78,7 @@ public class Operation {
         this.updatingKey = updatingKey;
         this.signingKey = signingKey;
         this.validFrom = validFrom;
+        this.previousDigest = previousDigest;
     }
 
     public UUID getId() {
@@ -139,6 +143,14 @@ public class Operation {
 
     public void setValidFrom(Timestamp validFrom) {
         this.validFrom = validFrom;
+    }
+
+    public byte[] getPreviousDigest() {
+        return previousDigest;
+    }
+
+    public void setPreviousDigest(byte[] previousDigest) {
+        this.previousDigest = previousDigest;
     }
 
     public OperationStatus getStatus() {

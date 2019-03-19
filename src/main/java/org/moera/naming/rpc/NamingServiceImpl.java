@@ -36,12 +36,15 @@ public class NamingServiceImpl implements NamingService {
             String nodeUri,
             byte[] signingKey,
             Long validFrom,
+            byte[] previousDigest,
             byte[] signature) {
 
         log.info("put(): name = {}, newGeneration = {}, updatingKey = {}, nodeUri = {},"
-                + " signingKey = {}, validFrom = {}, signature = {}",
+                + " signingKey = {}, validFrom = {}, previousDigest = {},"
+                + " signature = {}",
                 LogUtil.format(name), newGeneration, LogUtil.format(updatingKey), LogUtil.format(nodeUri),
-                LogUtil.format(signingKey), LogUtil.formatTimestamp(validFrom), LogUtil.format(signature));
+                LogUtil.format(signingKey), LogUtil.formatTimestamp(validFrom), LogUtil.format(previousDigest),
+                LogUtil.format(signature));
 
         if (StringUtils.isEmpty(name)) {
             throw new ServiceException(ServiceError.NAME_EMPTY);
@@ -71,11 +74,15 @@ public class NamingServiceImpl implements NamingService {
             }
         }
         Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : null;
+        if (previousDigest != null && previousDigest.length != Rules.DIGEST_LENGTH) {
+            throw new ServiceException(ServiceError.PREVIOUS_DIGEST_WRONG_LENGTH);
+        }
         if (signature != null && signature.length > Rules.SIGNATURE_MAX_LENGTH) {
             throw new ServiceException(ServiceError.SIGNATURE_TOO_LONG);
         }
 
-        return registry.addOperation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFromT);
+        return registry.addOperation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFromT,
+                previousDigest);
     }
 
     @Override
@@ -99,7 +106,7 @@ public class NamingServiceImpl implements NamingService {
 
         RegisteredName registeredName = registry.get(name, generation);
         if (registeredName == null) {
-            log.info("Name/generation is not found");
+            log.info("Name/generation is not found, returning null");
             return null;
         }
         Integer latestGeneration = registry.getLatestGenerationNumber(name);
@@ -112,7 +119,7 @@ public class NamingServiceImpl implements NamingService {
 
         RegisteredName registeredName = registry.getLatestGeneration(name);
         if (registeredName == null) {
-            log.info("Name is not found");
+            log.info("Name is not found, returning null");
             return null;
         }
         return getRegisteredNameInfo(registeredName, true);
@@ -131,6 +138,7 @@ public class NamingServiceImpl implements NamingService {
             info.setSigningKey(Util.base64encode(latestKey.getSigningKey()));
             info.setValidFrom(latestKey.getValidFrom().getTime());
         }
+        info.setDigest(registeredName.getDigest());
         return info;
     }
 

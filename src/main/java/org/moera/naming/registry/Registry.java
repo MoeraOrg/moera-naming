@@ -5,6 +5,7 @@ import java.security.GeneralSecurityException;
 import java.security.Signature;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -16,6 +17,7 @@ import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
+import org.moera.naming.rpc.DigestDataBuilder;
 import org.moera.naming.rpc.OperationStatus;
 import org.moera.naming.rpc.PutSignatureDataBuilder;
 import org.moera.naming.rpc.Rules;
@@ -46,9 +48,11 @@ public class Registry {
             byte[] signature,
             byte[] updatingKey,
             byte[] signingKey,
-            Timestamp validFrom) {
+            Timestamp validFrom,
+            byte[] previousDigest) {
 
-        Operation operation = new Operation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFrom);
+        Operation operation = new Operation(name, newGeneration, nodeUri, signature, updatingKey, signingKey,
+                validFrom, previousDigest);
         operationRepository.save(operation);
 
         log.info("Added operation {}", operation.getId());
@@ -66,7 +70,8 @@ public class Registry {
                     operation.getSignature(),
                     operation.getUpdatingKey(),
                     operation.getSigningKey(),
-                    operation.getValidFrom());
+                    operation.getValidFrom(),
+                    operation.getPreviousDigest());
             log.info("Operation {} SUCCEEDED", operation.getId());
             operation.setStatus(OperationStatus.SUCCEEDED);
             operation.setGeneration(generation);
@@ -86,10 +91,12 @@ public class Registry {
             byte[] signature,
             byte[] updatingKey,
             byte[] signingKey,
-            Timestamp validFrom) {
+            Timestamp validFrom,
+            byte[] previousDigest) {
 
         int generation;
         RegisteredName latest = storage.getLatestGeneration(name);
+        validateDigest(latest, previousDigest);
         if (isForceNewGeneration(latest, signature)) {
             log.debug("Forcing new generation");
 
@@ -100,12 +107,14 @@ public class Registry {
             if (newGeneration) {
                 RegisteredName target = newGeneration(latest, name);
                 generation = target.getNameGeneration().getGeneration();
-                validateSignature(target, null, updatingKey, nodeUri, signingKey, validFrom, signature);
+                validateSignature(target, null, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
+                        signature);
                 putNew(target, updatingKey, nodeUri, signingKey, validFrom);
             } else {
                 generation = latest.getNameGeneration().getGeneration();
                 SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
-                validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, signature);
+                validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
+                        signature);
                 putExisting(latest, updatingKey, nodeUri, signingKey, validFrom);
             }
         }
@@ -138,11 +147,12 @@ public class Registry {
             targetKey = new SigningKey();
             targetKey.setSigningKey(signingKey);
             targetKey.setValidFrom(validFrom);
-            targetKey.setRegisteredName(target);
         }
         target.setDeadline(Timestamp.from(Instant.now().plus(Rules.REGISTRATION_DURATION)));
-        storage.save(target);
+        target.setDigest(getDigest(target, targetKey));
+        target = storage.save(target);
         if (targetKey != null) {
+            targetKey.setRegisteredName(target);
             storage.save(targetKey);
         }
     }
@@ -175,12 +185,21 @@ public class Registry {
             targetKey = new SigningKey();
             targetKey.setSigningKey(signingKey);
             targetKey.setValidFrom(validFrom);
-            targetKey.setRegisteredName(target);
         }
         target.setDeadline(Timestamp.from(Instant.now().plus(Rules.REGISTRATION_DURATION)));
-        storage.save(target);
+        target.setDigest(getDigest(target, targetKey));
+        target = storage.save(target);
         if (targetKey != null) {
+            targetKey.setRegisteredName(target);
             storage.save(targetKey);
+        }
+    }
+
+    private void validateDigest(RegisteredName registeredName, byte[] previousDigest) {
+        byte[] digest = registeredName != null ? registeredName.getDigest() : Util.EMPTY_DIGEST;
+        previousDigest = previousDigest != null ? previousDigest : Util.EMPTY_DIGEST;
+        if (!Arrays.equals(digest, previousDigest)) {
+            throw new ServiceException(ServiceError.PREVIOUS_DIGEST_INCORRECT);
         }
     }
 
@@ -191,6 +210,7 @@ public class Registry {
             String nodeUri,
             byte[] signingKey,
             Timestamp validFrom,
+            byte[] previousDigest,
             byte[] signature) {
 
         try {
@@ -211,7 +231,8 @@ public class Registry {
                     nodeUri != null ? nodeUri : target.getNodeUri(),
                     target.getDeadline().getTime(),
                     eSigningKey,
-                    eValidFrom).toBytes();
+                    eValidFrom,
+                    previousDigest).toBytes();
 
             log.debug("Verifying signature: data = {}, signature = {}, target updatingKey = {}",
                     LogUtil.format(signatureData), LogUtil.format(signature), LogUtil.format(target.getUpdatingKey()));
@@ -242,6 +263,25 @@ public class Registry {
         RegisteredName target = new RegisteredName();
         target.setNameGeneration(new NameGeneration(name, generation));
         return target;
+    }
+
+    private byte[] getDigest(RegisteredName registeredName, SigningKey signingKey) {
+        if (registeredName == null) {
+            return Util.EMPTY_DIGEST;
+        }
+        try {
+            return new DigestDataBuilder(
+                    registeredName.getNameGeneration().getName(),
+                    registeredName.getNameGeneration().getGeneration(),
+                    registeredName.getUpdatingKey(),
+                    registeredName.getNodeUri(),
+                    registeredName.getDeadline().getTime(),
+                    signingKey != null ? signingKey.getSigningKey() : null,
+                    signingKey != null ? signingKey.getValidFrom().getTime() : 0,
+                    registeredName.getDigest()).getDigest();
+        } catch (IOException e) {
+            throw new ServiceException(ServiceError.IO_EXCEPTION);
+        }
     }
 
     public Operation getOperation(UUID operationId) {
