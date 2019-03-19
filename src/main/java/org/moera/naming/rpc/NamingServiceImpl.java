@@ -6,7 +6,6 @@ import java.util.UUID;
 import javax.inject.Inject;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
-import org.moera.commons.util.Util;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
@@ -130,12 +129,12 @@ public class NamingServiceImpl implements NamingService {
         info.setName(registeredName.getNameGeneration().getName());
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
         info.setLatest(latest);
-        info.setUpdatingKey(Util.base64encode(registeredName.getUpdatingKey()));
+        info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
         info.setDeadline(registeredName.getDeadline().getTime());
         SigningKey latestKey = registry.getLatestKey(registeredName.getNameGeneration());
         if (latestKey != null) {
-            info.setSigningKey(Util.base64encode(latestKey.getSigningKey()));
+            info.setSigningKey(latestKey.getSigningKey());
             info.setValidFrom(latestKey.getValidFrom().getTime());
         }
         info.setDigest(registeredName.getDigest());
