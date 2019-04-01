@@ -1,5 +1,7 @@
 package org.moera.naming.rpc.exception;
 
+import java.util.Arrays;
+
 public enum ServiceError {
 
     NAME_EMPTY(1, "name.empty", "name is empty"),
@@ -15,7 +17,7 @@ public enum ServiceError {
     SIGNATURE_TOO_LONG(11, "signature.too-long", "signature is too long"),
     SIGNATURE_INVALID(12, "signature.failed", "signature check failed"),
     IO_EXCEPTION(13, "io.failure", "I/O exception occured"),
-    CRYPTO_EXCEPTION(14, "crypto.failure", "Crypto configuration exception occured"),
+    CRYPTO_EXCEPTION(14, "crypto.failure", "crypto configuration exception occured"),
     PREVIOUS_DIGEST_WRONG_LENGTH(15, "previous-digest.wrong-length", "previousDigest has wrong length"),
     PREVIOUS_DIGEST_INCORRECT(16, "previous-digest.incorrect", "previousDigest differs from the current one");
 
@@ -39,6 +41,13 @@ public enum ServiceError {
 
     public String getMessage() {
         return message;
+    }
+
+    public static ServiceError forCode(String code) {
+        if (code == null) {
+            return null;
+        }
+        return Arrays.stream(values()).filter(v -> v.getErrorCode().equals(code)).findFirst().orElse(null);
     }
 
 }

@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 import org.moera.commons.util.Util;
 import org.moera.naming.rpc.OperationStatus;
 import org.moera.naming.rpc.OperationStatusInfo;
+import org.moera.naming.rpc.exception.ServiceError;
 
 @Entity
 @Table(name = "operations")
@@ -200,6 +201,10 @@ public class Operation {
         info.setAdded(getAdded());
         info.setCompleted(getCompleted());
         info.setErrorCode(getErrorCode());
+        ServiceError serviceError = ServiceError.forCode(getErrorCode());
+        if (serviceError != null) {
+            info.setErrorMessage(serviceError.getMessage());
+        }
         info.setGeneration(getGeneration());
         return info;
     }
