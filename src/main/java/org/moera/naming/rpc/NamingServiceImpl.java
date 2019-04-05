@@ -13,6 +13,7 @@ import org.moera.naming.registry.Registry;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
 import org.moera.naming.util.LogUtil;
+import org.moera.naming.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -139,6 +140,14 @@ public class NamingServiceImpl implements NamingService {
         }
         info.setDigest(registeredName.getDigest());
         return info;
+    }
+
+    @Override
+    public boolean isFree(String name) {
+        log.info("isFree(): name = {}", LogUtil.format(name));
+
+        RegisteredName registeredName = registry.getLatestGeneration(name);
+        return registeredName == null || registeredName.getDeadline().before(Util.now());
     }
 
 }
