@@ -3,6 +3,7 @@ package org.moera.naming.registry;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
@@ -243,6 +244,8 @@ public class Registry {
             if (!sign.verify(signature)) {
                 throw new ServiceException(ServiceError.SIGNATURE_INVALID);
             }
+        } catch (SignatureException e) {
+            throw new ServiceException(ServiceError.SIGNATURE_INVALID);
         } catch (GeneralSecurityException e) {
             log.error("Crypto exception:", e);
             throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);
