@@ -52,7 +52,7 @@ public class NamingServiceImpl implements NamingService {
         if (name.length() > Rules.NAME_MAX_LENGTH) {
             throw new ServiceException(ServiceError.NAME_TOO_LONG);
         }
-        if (!Rules.NAME_PATTERN.matcher(name).matches()) {
+        if (!Rules.isNameValid(name)) {
             throw new ServiceException(ServiceError.NAME_FORBIDDEN_CHARS);
         }
         if (updatingKey != null) {
