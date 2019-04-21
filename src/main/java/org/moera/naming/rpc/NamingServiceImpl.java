@@ -132,11 +132,11 @@ public class NamingServiceImpl implements NamingService {
         info.setLatest(latest);
         info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
-        info.setDeadline(registeredName.getDeadline().getTime());
+        info.setDeadline(registeredName.getDeadline().toInstant().getEpochSecond());
         SigningKey latestKey = registry.getLatestKey(registeredName.getNameGeneration());
         if (latestKey != null) {
             info.setSigningKey(latestKey.getSigningKey());
-            info.setValidFrom(latestKey.getValidFrom().getTime());
+            info.setValidFrom(latestKey.getValidFrom().toInstant().getEpochSecond());
         }
         info.setDigest(registeredName.getDigest());
         return info;
