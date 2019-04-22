@@ -220,17 +220,17 @@ public class Registry {
 
             if (signingKey != null) {
                 eSigningKey = signingKey;
-                eValidFrom = validFrom.getTime();
+                eValidFrom = validFrom.toInstant().getEpochSecond();
             } else if (latestKey != null) {
                 eSigningKey = latestKey.getSigningKey();
-                eValidFrom = latestKey.getValidFrom().getTime();
+                eValidFrom = latestKey.getValidFrom().toInstant().getEpochSecond();
             }
 
             byte[] signatureData = new PutSignatureDataBuilder(
                     target.getNameGeneration().getName(),
                     updatingKey != null ? updatingKey : target.getUpdatingKey(),
                     nodeUri != null ? nodeUri : target.getNodeUri(),
-                    target.getDeadline().getTime(),
+                    target.getDeadline().toInstant().getEpochSecond(),
                     eSigningKey,
                     eValidFrom,
                     previousDigest).toBytes();
@@ -278,9 +278,9 @@ public class Registry {
                     registeredName.getNameGeneration().getGeneration(),
                     registeredName.getUpdatingKey(),
                     registeredName.getNodeUri(),
-                    registeredName.getDeadline().getTime(),
+                    registeredName.getDeadline().toInstant().getEpochSecond(),
                     signingKey != null ? signingKey.getSigningKey() : null,
-                    signingKey != null ? signingKey.getValidFrom().getTime() : 0,
+                    signingKey != null ? signingKey.getValidFrom().toInstant().getEpochSecond() : 0,
                     registeredName.getDigest()).getDigest();
         } catch (IOException e) {
             throw new ServiceException(ServiceError.IO_EXCEPTION);
