@@ -18,7 +18,7 @@ Installation instructions:
    http://moera.org/development/setup/create-db.html).
 4. Go to the source directory.
 5. Create `src/main/resources/application-dev.yml` with the following
-  content:
+   content:
    
    ```yaml
    spring:
@@ -26,9 +26,9 @@ Installation instructions:
        url: jdbc:postgresql:<dbname>?characterEncoding=UTF-8
        username: <username>
        password: <password>
-    ```
+   ```
 6. By default, the server runs on port 8080. If you want it to run on a
-  different port, add these lines to the file above:
+   different port, add these lines to the file above:
     
    ```yaml
    server:
