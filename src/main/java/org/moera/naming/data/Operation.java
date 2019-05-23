@@ -29,9 +29,6 @@ public class Operation {
     @Size(max = 127)
     private String name;
 
-    @NotNull
-    private boolean newGeneration;
-
     @Size(max = 255)
     private String nodeUri;
 
@@ -56,14 +53,15 @@ public class Operation {
 
     private String errorCode;
 
-    private Integer generation;
+    @NotNull
+    private int generation;
 
     public Operation() {
     }
 
     public Operation(
             String name,
-            boolean newGeneration,
+            int generation,
             String nodeUri,
             byte[] signature,
             byte[] updatingKey,
@@ -73,7 +71,7 @@ public class Operation {
 
         id = UUID.randomUUID();
         this.name = name;
-        this.newGeneration = newGeneration;
+        this.generation = generation;
         this.nodeUri = nodeUri;
         this.signature = signature;
         this.updatingKey = updatingKey;
@@ -96,14 +94,6 @@ public class Operation {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public boolean isNewGeneration() {
-        return newGeneration;
-    }
-
-    public void setNewGeneration(boolean newGeneration) {
-        this.newGeneration = newGeneration;
     }
 
     public String getNodeUri() {
@@ -186,11 +176,11 @@ public class Operation {
         this.errorCode = errorCode;
     }
 
-    public Integer getGeneration() {
+    public int getGeneration() {
         return generation;
     }
 
-    public void setGeneration(Integer generation) {
+    public void setGeneration(int generation) {
         this.generation = generation;
     }
 

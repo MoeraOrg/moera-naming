@@ -31,7 +31,7 @@ public class NamingServiceImpl implements NamingService {
     @Override
     public UUID put(
             String name,
-            boolean newGeneration,
+            int generation,
             byte[] updatingKey,
             String nodeUri,
             byte[] signingKey,
@@ -39,10 +39,10 @@ public class NamingServiceImpl implements NamingService {
             byte[] previousDigest,
             byte[] signature) {
 
-        log.info("put(): name = {}, newGeneration = {}, updatingKey = {}, nodeUri = {},"
+        log.info("put(): name = {}, generation = {}, updatingKey = {}, nodeUri = {},"
                 + " signingKey = {}, validFrom = {}, previousDigest = {},"
                 + " signature = {}",
-                LogUtil.format(name), newGeneration, LogUtil.format(updatingKey), LogUtil.format(nodeUri),
+                LogUtil.format(name), generation, LogUtil.format(updatingKey), LogUtil.format(nodeUri),
                 LogUtil.format(signingKey), LogUtil.formatTimestamp(validFrom), LogUtil.format(previousDigest),
                 LogUtil.format(signature));
 
@@ -55,12 +55,8 @@ public class NamingServiceImpl implements NamingService {
         if (!Rules.isNameValid(name)) {
             throw new ServiceException(ServiceError.NAME_FORBIDDEN_CHARS);
         }
-        if (updatingKey != null) {
-            if (updatingKey.length != Rules.PUBLIC_KEY_LENGTH) {
-                throw new ServiceException(ServiceError.UPDATING_KEY_WRONG_LENGTH);
-            }
-        } else if (newGeneration) { // this case we can detect early
-            throw new ServiceException(ServiceError.UPDATING_KEY_EMPTY);
+        if (updatingKey != null && updatingKey.length != Rules.PUBLIC_KEY_LENGTH) {
+            throw new ServiceException(ServiceError.UPDATING_KEY_WRONG_LENGTH);
         }
         if (nodeUri != null && nodeUri.length() > Rules.NODE_URI_MAX_LENGTH) {
             throw new ServiceException(ServiceError.NODE_URI_TOO_LONG);
@@ -81,7 +77,7 @@ public class NamingServiceImpl implements NamingService {
             throw new ServiceException(ServiceError.SIGNATURE_TOO_LONG);
         }
 
-        return registry.addOperation(name, newGeneration, nodeUri, signature, updatingKey, signingKey, validFromT,
+        return registry.addOperation(name, generation, nodeUri, signature, updatingKey, signingKey, validFromT,
                 previousDigest);
     }
 

@@ -44,7 +44,7 @@ public class Registry {
     @Transactional
     public UUID addOperation(
             String name,
-            boolean newGeneration,
+            int generation,
             String nodeUri,
             byte[] signature,
             byte[] updatingKey,
@@ -52,7 +52,7 @@ public class Registry {
             Timestamp validFrom,
             byte[] previousDigest) {
 
-        Operation operation = new Operation(name, newGeneration, nodeUri, signature, updatingKey, signingKey,
+        Operation operation = new Operation(name, generation, nodeUri, signature, updatingKey, signingKey,
                 validFrom, previousDigest);
         operationRepository.save(operation);
 
@@ -64,9 +64,9 @@ public class Registry {
     public void executeOperation(Operation operation) {
         try {
             log.info("Executing operation {}", operation.getId());
-            int generation = executeOperation(
+            executeOperation(
                     operation.getName(),
-                    operation.isNewGeneration(),
+                    operation.getGeneration(),
                     operation.getNodeUri(),
                     operation.getSignature(),
                     operation.getUpdatingKey(),
@@ -75,7 +75,6 @@ public class Registry {
                     operation.getPreviousDigest());
             log.info("Operation {} SUCCEEDED", operation.getId());
             operation.setStatus(OperationStatus.SUCCEEDED);
-            operation.setGeneration(generation);
         } catch (ServiceException e) {
             log.warn("Operation {} FAILED, error code = {}", operation.getId(), e.getErrorCode());
             operation.setStatus(OperationStatus.FAILED);
@@ -85,9 +84,9 @@ public class Registry {
         operationRepository.save(operation);
     }
 
-    private int executeOperation(
+    private void executeOperation(
             String name,
-            boolean newGeneration,
+            int generation,
             String nodeUri,
             byte[] signature,
             byte[] updatingKey,
@@ -95,31 +94,26 @@ public class Registry {
             Timestamp validFrom,
             byte[] previousDigest) {
 
-        int generation;
         RegisteredName latest = storage.getLatestGeneration(name);
         validateDigest(latest, previousDigest);
         if (isForceNewGeneration(latest, signature)) {
             log.debug("Forcing new generation");
 
-            RegisteredName target = newGeneration(latest, name);
-            generation = target.getNameGeneration().getGeneration();
+            RegisteredName target = newGeneration(latest, name, generation);
             putNew(target, updatingKey, nodeUri, signingKey, validFrom);
         } else {
-            if (newGeneration) {
-                RegisteredName target = newGeneration(latest, name);
-                generation = target.getNameGeneration().getGeneration();
+            if (generation != latest.getNameGeneration().getGeneration()) {
+                RegisteredName target = newGeneration(latest, name, generation);
                 validateSignature(target, null, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
                         signature);
                 putNew(target, updatingKey, nodeUri, signingKey, validFrom);
             } else {
-                generation = latest.getNameGeneration().getGeneration();
                 SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
                 validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
                         signature);
                 putExisting(latest, updatingKey, nodeUri, signingKey, validFrom);
             }
         }
-        return generation;
     }
 
     private void putNew(
@@ -261,8 +255,11 @@ public class Registry {
         return latest.getDeadline().before(Util.now()) && StringUtils.isEmpty(signature);
     }
 
-    private RegisteredName newGeneration(RegisteredName latest, String name) {
-        int generation = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
+    private RegisteredName newGeneration(RegisteredName latest, String name, int generation) {
+        int targetGeneration = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
+        if (targetGeneration != generation) {
+            throw new ServiceException(ServiceError.GENERATION_NOT_NEXT);
+        }
         RegisteredName target = new RegisteredName();
         target.setNameGeneration(new NameGeneration(name, generation));
         return target;

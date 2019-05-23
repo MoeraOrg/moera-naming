@@ -19,7 +19,9 @@ public enum ServiceError {
     IO_EXCEPTION(13, "io.failure", "I/O exception occured"),
     CRYPTO_EXCEPTION(14, "crypto.failure", "crypto configuration exception occured"),
     PREVIOUS_DIGEST_WRONG_LENGTH(15, "previous-digest.wrong-length", "previousDigest has wrong length"),
-    PREVIOUS_DIGEST_INCORRECT(16, "previous-digest.incorrect", "previousDigest differs from the current one");
+    PREVIOUS_DIGEST_INCORRECT(16, "previous-digest.incorrect", "previousDigest differs from the current one"),
+    GENERATION_NOT_SAME(17, "generation.not-same", "generation must be the same as the current one"),
+    GENERATION_NOT_NEXT(18, "generation.not-next", "generation must be the next after the current one");
 
     private int rpcCode;
     private String errorCode;
