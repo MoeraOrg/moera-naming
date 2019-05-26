@@ -2,7 +2,6 @@ package org.moera.naming.registry;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -11,16 +10,15 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.moera.commons.util.CryptoUtil;
+import org.moera.commons.crypto.CryptoUtil;
 import org.moera.commons.util.Util;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
-import org.moera.naming.rpc.DigestDataBuilder;
 import org.moera.naming.rpc.OperationStatus;
-import org.moera.naming.rpc.PutSignatureDataBuilder;
+import org.moera.naming.rpc.PutCallFingerprint;
 import org.moera.naming.rpc.Rules;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
@@ -220,22 +218,23 @@ public class Registry {
                 eValidFrom = latestKey.getValidFrom().toInstant().getEpochSecond();
             }
 
-            byte[] signatureData = new PutSignatureDataBuilder(
+            Object putCall = new PutCallFingerprint(
                     target.getNameGeneration().getName(),
+                    target.getNameGeneration().getGeneration(),
                     updatingKey != null ? updatingKey : target.getUpdatingKey(),
                     nodeUri != null ? nodeUri : target.getNodeUri(),
                     target.getDeadline().toInstant().getEpochSecond(),
                     eSigningKey,
                     eValidFrom,
-                    previousDigest).toBytes();
+                    previousDigest);
 
-            log.debug("Verifying signature: data = {}, signature = {}, target updatingKey = {}",
-                    LogUtil.format(signatureData), LogUtil.format(signature), LogUtil.format(target.getUpdatingKey()));
+            if (log.isDebugEnabled()) {
+                log.debug("Verifying signature: fingerprint = {}, signature = {}, target updatingKey = {}",
+                        LogUtil.format(CryptoUtil.fingerprint(putCall)), LogUtil.format(signature),
+                        LogUtil.format(target.getUpdatingKey()));
+            }
 
-            Signature sign = Signature.getInstance(Rules.SIGNATURE_ALGORITHM, "BC");
-            sign.initVerify(CryptoUtil.toPublicKey(target.getUpdatingKey()));
-            sign.update(signatureData);
-            if (!sign.verify(signature)) {
+            if (!CryptoUtil.verify(putCall, signature, target.getUpdatingKey())) {
                 throw new ServiceException(ServiceError.SIGNATURE_INVALID);
             }
         } catch (SignatureException e) {
@@ -270,7 +269,7 @@ public class Registry {
             return Util.EMPTY_DIGEST;
         }
         try {
-            return new DigestDataBuilder(
+            return CryptoUtil.digest(new PutCallFingerprint(
                     registeredName.getNameGeneration().getName(),
                     registeredName.getNameGeneration().getGeneration(),
                     registeredName.getUpdatingKey(),
@@ -278,7 +277,7 @@ public class Registry {
                     registeredName.getDeadline().toInstant().getEpochSecond(),
                     signingKey != null ? signingKey.getSigningKey() : null,
                     signingKey != null ? signingKey.getValidFrom().toInstant().getEpochSecond() : 0,
-                    registeredName.getDigest()).getDigest();
+                    registeredName.getDigest()));
         } catch (IOException e) {
             throw new ServiceException(ServiceError.IO_EXCEPTION);
         }
