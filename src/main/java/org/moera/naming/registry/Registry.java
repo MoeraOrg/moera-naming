@@ -223,7 +223,6 @@ public class Registry {
                     target.getNameGeneration().getGeneration(),
                     updatingKey != null ? updatingKey : target.getUpdatingKey(),
                     nodeUri != null ? nodeUri : target.getNodeUri(),
-                    target.getDeadline().toInstant().getEpochSecond(),
                     eSigningKey,
                     eValidFrom,
                     previousDigest);
@@ -274,7 +273,6 @@ public class Registry {
                     registeredName.getNameGeneration().getGeneration(),
                     registeredName.getUpdatingKey(),
                     registeredName.getNodeUri(),
-                    registeredName.getDeadline().toInstant().getEpochSecond(),
                     signingKey != null ? signingKey.getSigningKey() : null,
                     signingKey != null ? signingKey.getValidFrom().toInstant().getEpochSecond() : 0,
                     registeredName.getDigest()));
