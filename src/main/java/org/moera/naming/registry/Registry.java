@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.moera.commons.crypto.CryptoUtil;
+import org.moera.commons.util.LogUtil;
 import org.moera.commons.util.Util;
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.Operation;
@@ -22,7 +23,6 @@ import org.moera.naming.rpc.PutCallFingerprint;
 import org.moera.naming.rpc.Rules;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
-import org.moera.naming.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
