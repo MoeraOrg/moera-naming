@@ -1,7 +1,6 @@
 package org.moera.naming.rpc;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.UUID;
 import javax.inject.Inject;
 
@@ -69,7 +68,7 @@ public class NamingServiceImpl implements NamingService {
                 throw new ServiceException(ServiceError.VALID_FROM_EMPTY);
             }
         }
-        Timestamp validFromT = validFrom != null ? Timestamp.from(Instant.ofEpochSecond(validFrom)) : null;
+        Timestamp validFromT = Util.toTimestamp(validFrom);
         if (previousDigest != null && previousDigest.length != Rules.DIGEST_LENGTH) {
             throw new ServiceException(ServiceError.PREVIOUS_DIGEST_WRONG_LENGTH);
         }
