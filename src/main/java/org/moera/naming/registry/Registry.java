@@ -1,8 +1,5 @@
 package org.moera.naming.registry;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.SignatureException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
@@ -10,6 +7,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.moera.commons.crypto.CryptoException;
 import org.moera.commons.crypto.CryptoUtil;
 import org.moera.commons.util.LogUtil;
 import org.moera.commons.util.Util;
@@ -236,13 +234,9 @@ public class Registry {
             if (!CryptoUtil.verify(putCall, signature, target.getUpdatingKey())) {
                 throw new ServiceException(ServiceError.SIGNATURE_INVALID);
             }
-        } catch (SignatureException e) {
-            throw new ServiceException(ServiceError.SIGNATURE_INVALID);
-        } catch (GeneralSecurityException e) {
+        } catch (CryptoException e) {
             log.error("Crypto exception:", e);
             throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);
-        } catch (IOException e) {
-            throw new ServiceException(ServiceError.IO_EXCEPTION);
         }
     }
 
@@ -276,8 +270,9 @@ public class Registry {
                     signingKey != null ? signingKey.getSigningKey() : null,
                     signingKey != null ? signingKey.getValidFrom().toInstant().getEpochSecond() : 0,
                     registeredName.getDigest()));
-        } catch (IOException e) {
-            throw new ServiceException(ServiceError.IO_EXCEPTION);
+        } catch (CryptoException e) {
+            log.error("Crypto exception:", e);
+            throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);
         }
     }
 

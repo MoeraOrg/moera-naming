@@ -16,12 +16,11 @@ public enum ServiceError {
     VALID_FROM_TOO_FAR_IN_PAST(10, "valid-from.too-far-in-past", "validFrom is too far in the past"),
     SIGNATURE_TOO_LONG(11, "signature.too-long", "signature is too long"),
     SIGNATURE_INVALID(12, "signature.failed", "signature check failed"),
-    IO_EXCEPTION(13, "io.failure", "I/O exception occured"),
-    CRYPTO_EXCEPTION(14, "crypto.failure", "crypto configuration exception occured"),
-    PREVIOUS_DIGEST_WRONG_LENGTH(15, "previous-digest.wrong-length", "previousDigest has wrong length"),
-    PREVIOUS_DIGEST_INCORRECT(16, "previous-digest.incorrect", "previousDigest differs from the current one"),
-    GENERATION_NOT_SAME(17, "generation.not-same", "generation must be the same as the current one"),
-    GENERATION_NOT_NEXT(18, "generation.not-next", "generation must be the next after the current one");
+    CRYPTO_EXCEPTION(13, "crypto.failure", "crypto configuration exception occured"),
+    PREVIOUS_DIGEST_WRONG_LENGTH(14, "previous-digest.wrong-length", "previousDigest has wrong length"),
+    PREVIOUS_DIGEST_INCORRECT(15, "previous-digest.incorrect", "previousDigest differs from the current one"),
+    GENERATION_NOT_SAME(16, "generation.not-same", "generation must be the same as the current one"),
+    GENERATION_NOT_NEXT(17, "generation.not-next", "generation must be the next after the current one");
 
     private int rpcCode;
     private String errorCode;
