@@ -28,6 +28,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL82Dialect  # The SQL dialect makes Hibernate generate better SQL for the chosen database
 
+  mustache:
+    suffix: .m.html
+
 naming:
   operation-rate: # Operations per minute
     average: 1

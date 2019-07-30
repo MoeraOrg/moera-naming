@@ -1,0 +1,23 @@
+BODY {
+    background: #f9f9fb;
+}
+
+.container {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2rem;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    padding: 2rem;
+}
+
+.container .logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.container .logo A {
+    text-decoration: none;
+}
