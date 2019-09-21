@@ -23,12 +23,9 @@ public class UriUtil {
             }
         }
         UriComponents components = builder.build();
-        if (components.getScheme() != null && components.getScheme().equalsIgnoreCase("https")
-                && components.getPort() == 443) {
-            builder.port(null);
-        }
-        if (components.getScheme() != null && components.getScheme().equalsIgnoreCase("http")
-                && components.getPort() == 80) {
+        if (components.getScheme() != null
+                && (components.getScheme().equalsIgnoreCase("https") && components.getPort() == 443
+                || components.getScheme().equalsIgnoreCase("http") && components.getPort() == 80)) {
             builder.port(null);
         }
         return builder;
