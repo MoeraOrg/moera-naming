@@ -5,7 +5,7 @@
 
 	<groupId>org.moera</groupId>
 	<artifactId>moera-naming</artifactId>
-	<version>0.1.1-SHAPSHOT</version>
+	<version>0.1.1</version>
 	<name>moera-naming</name>
 	<description>Moera naming server</description>
 	<packaging>war</packaging>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.moera</groupId>
             <artifactId>moera-commons</artifactId>
-            <version>0.1.1-SNAPSHOT</version>
+            <version>0.1.1</version>
         </dependency>
 	</dependencies>
 
