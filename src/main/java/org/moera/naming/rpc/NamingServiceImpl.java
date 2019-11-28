@@ -99,28 +99,50 @@ public class NamingServiceImpl implements NamingService {
     public RegisteredNameInfo getCurrent(String name, int generation) {
         log.info("getCurrent(): name = {}, generation = {}", LogUtil.format(name), generation);
 
-        RegisteredName registeredName = registry.get(name, generation);
-        if (registeredName == null) {
-            log.info("Name/generation is not found, returning null");
-            return null;
-        }
-        Integer latestGeneration = registry.getLatestGenerationNumber(name);
-        return getRegisteredNameInfo(registeredName, latestGeneration == generation);
+        return getRegisteredNameInfo(name, generation, null);
     }
 
     @Override
     public RegisteredNameInfo getCurrentForLatest(String name) {
         log.info("getCurrentForLatest(): name = {}", LogUtil.format(name));
 
+        return getRegisteredNameInfo(name, null);
+    }
+
+    @Override
+    public RegisteredNameInfo getPast(String name, int generation, long at) {
+        log.info("getPast(): name = {}, generation = {}, at = {}", LogUtil.format(name), generation, at);
+
+        return getRegisteredNameInfo(name, generation, Util.toTimestamp(at));
+    }
+
+    @Override
+    public RegisteredNameInfo getPastForLatest(String name, long at) {
+        log.info("getPastForLatest(): name = {}, at = {}", LogUtil.format(name), at);
+
+        return getRegisteredNameInfo(name, Util.toTimestamp(at));
+    }
+
+    private RegisteredNameInfo getRegisteredNameInfo(String name, int generation, Timestamp at) {
+        RegisteredName registeredName = registry.get(name, generation);
+        if (registeredName == null) {
+            log.info("Name/generation is not found, returning null");
+            return null;
+        }
+        Integer latestGeneration = registry.getLatestGenerationNumber(name);
+        return getRegisteredNameInfo(registeredName, latestGeneration == generation, at);
+    }
+
+    private RegisteredNameInfo getRegisteredNameInfo(String name, Timestamp at) {
         RegisteredName registeredName = registry.getLatestGeneration(name);
         if (registeredName == null) {
             log.info("Name is not found, returning null");
             return null;
         }
-        return getRegisteredNameInfo(registeredName, true);
+        return getRegisteredNameInfo(registeredName, true, at);
     }
 
-    private RegisteredNameInfo getRegisteredNameInfo(RegisteredName registeredName, boolean latest) {
+    private RegisteredNameInfo getRegisteredNameInfo(RegisteredName registeredName, boolean latest, Timestamp at) {
         RegisteredNameInfo info = new RegisteredNameInfo();
         info.setName(registeredName.getNameGeneration().getName());
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
@@ -128,10 +150,12 @@ public class NamingServiceImpl implements NamingService {
         info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
         info.setDeadline(registeredName.getDeadline().toInstant().getEpochSecond());
-        SigningKey latestKey = registry.getLatestKey(registeredName.getNameGeneration());
-        if (latestKey != null) {
-            info.setSigningKey(latestKey.getSigningKey());
-            info.setValidFrom(latestKey.getValidFrom().toInstant().getEpochSecond());
+        SigningKey key = at == null
+                ? registry.getLatestKey(registeredName.getNameGeneration())
+                : registry.getKeyValidAt(registeredName.getNameGeneration(), at);
+        if (key != null) {
+            info.setSigningKey(key.getSigningKey());
+            info.setValidFrom(key.getValidFrom().toInstant().getEpochSecond());
         }
         info.setDigest(registeredName.getDigest());
         return info;

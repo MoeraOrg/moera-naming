@@ -1,5 +1,6 @@
 package org.moera.naming.registry;
 
+import java.sql.Timestamp;
 import java.util.List;
 import javax.inject.Inject;
 
@@ -35,6 +36,11 @@ public class Storage {
 
     public SigningKey getLatestKey(NameGeneration nameGeneration) {
         List<SigningKey> keys = signingKeyRepository.findAllKeys(nameGeneration, PageRequest.of(0, 1));
+        return keys.isEmpty() ? null : keys.get(0);
+    }
+
+    public SigningKey getKeyValidAt(NameGeneration nameGeneration, Timestamp at) {
+        List<SigningKey> keys = signingKeyRepository.findKeysValidBefore(nameGeneration, at, PageRequest.of(0, 1));
         return keys.isEmpty() ? null : keys.get(0);
     }
 

@@ -296,4 +296,8 @@ public class Registry {
         return storage.getLatestKey(nameGeneration);
     }
 
+    public SigningKey getKeyValidAt(NameGeneration nameGeneration, Timestamp at) {
+        return storage.getKeyValidAt(nameGeneration, at);
+    }
+
 }
