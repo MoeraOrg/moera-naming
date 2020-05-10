@@ -4,6 +4,8 @@ Read more about Moera at https://moera.org
 
 Learn more about Moera naming servers: http://moera.org/overview/naming.html
 
+Bugs and feature requests: https://github.com/MoeraOrg/moera-issues/issues
+
 How to setup a complete Moera Development Environment: http://moera.org/development/setup/index.html
 
 Installation instructions:
