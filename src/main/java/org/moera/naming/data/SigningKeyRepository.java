@@ -9,11 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface SigningKeyRepository extends JpaRepository<SigningKey, Long> {
 
-    @Query("select s from SigningKey s where s.registeredName.nameGeneration = ?1 order by s.created asc")
+    @Query("select s from SigningKey s where s.registeredName.nameGeneration = ?1 order by s.validFrom desc")
     List<SigningKey> findAllKeys(NameGeneration nameGeneration, Pageable page);
 
     @Query("select s from SigningKey s where s.registeredName.nameGeneration = ?1 and s.validFrom <= ?2"
-            + " order by s.created asc")
+            + " order by s.validFrom desc")
     List<SigningKey> findKeysValidBefore(NameGeneration nameGeneration, Timestamp before, Pageable page);
 
 }
