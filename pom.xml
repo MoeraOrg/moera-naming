@@ -5,7 +5,7 @@
 
 	<groupId>org.moera</groupId>
 	<artifactId>moera-naming</artifactId>
-	<version>0.3.1</version>
+	<version>0.3.2-SNAPSHOT</version>
 	<name>moera-naming</name>
 	<description>Moera naming server</description>
 	<packaging>war</packaging>

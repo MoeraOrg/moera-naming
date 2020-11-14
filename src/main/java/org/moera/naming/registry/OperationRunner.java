@@ -35,7 +35,7 @@ public class OperationRunner {
         capacity = config.getMaxOperationRate();
     }
 
-    @Scheduled(fixedDelayString = "PT1M") // every minute
+    @Scheduled(fixedDelayString = "PT10S") // every 10 seconds
     public void runOperationQueue() {
         capacity += config.getAverageOperationRate();
         if (capacity > config.getMaxOperationRate()) {

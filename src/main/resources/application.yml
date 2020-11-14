@@ -32,8 +32,8 @@ spring:
     suffix: .m.html
 
 naming:
-  operation-rate: # Operations per minute
+  operation-rate: # Operations per 10 seconds
     average: 1
-    max: 20
+    max: 4
 
   mock-network-latency: false
