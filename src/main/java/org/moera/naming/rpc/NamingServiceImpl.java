@@ -1,6 +1,8 @@
 package org.moera.naming.rpc;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import javax.inject.Inject;
 
@@ -149,7 +151,8 @@ public class NamingServiceImpl implements NamingService {
         info.setLatest(latest);
         info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
-        info.setDeadline(registeredName.getDeadline().toInstant().getEpochSecond());
+        // For backward compatibility only
+        info.setDeadline(Instant.now().plus(10, ChronoUnit.YEARS).getEpochSecond());
         SigningKey key = at == null
                 ? registry.getLatestKey(registeredName.getNameGeneration())
                 : registry.getKeyValidAt(registeredName.getNameGeneration(), at);
@@ -163,10 +166,14 @@ public class NamingServiceImpl implements NamingService {
 
     @Override
     public boolean isFree(String name) {
-        log.info("isFree(): name = {}", LogUtil.format(name));
+        return isFree(name, 0);
+    }
 
-        RegisteredName registeredName = registry.getLatestGeneration(name);
-        return registeredName == null || registeredName.getDeadline().before(Util.now());
+    @Override
+    public boolean isFree(String name, int generation) {
+        log.info("isFree(): name = {}, generation = {}", LogUtil.format(name), LogUtil.format(generation));
+
+        return registry.get(name, generation) == null;
     }
 
 }

@@ -24,9 +24,6 @@ public class RegisteredName {
     private Timestamp created = Util.now();
 
     @NotNull
-    private Timestamp deadline;
-
-    @NotNull
     @Size(max = Rules.NODE_URI_MAX_LENGTH)
     private String nodeUri = "";
 
@@ -55,14 +52,6 @@ public class RegisteredName {
 
     public void setCreated(Timestamp created) {
         this.created = created;
-    }
-
-    public Timestamp getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(Timestamp deadline) {
-        this.deadline = deadline;
     }
 
     public String getNodeUri() {

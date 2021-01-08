@@ -92,8 +92,8 @@ public class Registry {
 
         RegisteredName latest = storage.getLatestGeneration(name);
         validateDigest(latest, previousDigest);
-        if (isForceNewGeneration(latest, signature)) {
-            log.debug("Forcing new generation");
+        if (latest == null) {
+            log.debug("Registering a new name");
 
             RegisteredName target = newGeneration(latest, name, generation);
             putNew(target, updatingKey, nodeUri, signingKey, validFrom);
@@ -139,7 +139,6 @@ public class Registry {
             targetKey.setSigningKey(signingKey);
             targetKey.setValidFrom(validFrom);
         }
-        target.setDeadline(Timestamp.from(Instant.now().plus(Rules.REGISTRATION_DURATION)));
         target.setDigest(getDigest(target, targetKey));
         target = storage.save(target);
         if (targetKey != null) {
@@ -177,7 +176,6 @@ public class Registry {
             targetKey.setSigningKey(signingKey);
             targetKey.setValidFrom(validFrom);
         }
-        target.setDeadline(Timestamp.from(Instant.now().plus(Rules.REGISTRATION_DURATION)));
         target.setDigest(getDigest(target, targetKey));
         target = storage.save(target);
         if (targetKey != null) {
@@ -240,13 +238,6 @@ public class Registry {
         }
     }
 
-    private boolean isForceNewGeneration(RegisteredName latest, byte[] signature) {
-        if (latest == null) {
-            return true;
-        }
-        return latest.getDeadline().before(Util.now()) && StringUtils.isEmpty(signature);
-    }
-
     private RegisteredName newGeneration(RegisteredName latest, String name, int generation) {
         int targetGeneration = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
         if (targetGeneration != generation) {
@@ -284,10 +275,12 @@ public class Registry {
         return storage.get(name, generation);
     }
 
+    // TODO to be deleted
     public RegisteredName getLatestGeneration(String name) {
         return storage.getLatestGeneration(name);
     }
 
+    // TODO to be deleted
     public Integer getLatestGenerationNumber(String name) {
         return storage.getLatestGenerationNumber(name);
     }
