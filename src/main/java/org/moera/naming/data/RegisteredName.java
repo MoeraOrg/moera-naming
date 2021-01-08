@@ -30,6 +30,13 @@ public class RegisteredName {
     @NotNull
     private byte[] digest;
 
+    public RegisteredName() {
+    }
+
+    public RegisteredName(String name, int generation) {
+        nameGeneration = new NameGeneration(name, generation);
+    }
+
     public NameGeneration getNameGeneration() {
         return nameGeneration;
     }

@@ -90,25 +90,21 @@ public class Registry {
             Timestamp validFrom,
             byte[] previousDigest) {
 
-        RegisteredName latest = storage.getLatestGeneration(name);
+        log.debug("Executing operation on name = {}, generation = {}", LogUtil.format(name), generation);
+
+        RegisteredName latest = storage.get(name, generation);
         validateDigest(latest, previousDigest);
         if (latest == null) {
             log.debug("Registering a new name");
 
-            RegisteredName target = newGeneration(latest, name, generation);
-            putNew(target, updatingKey, nodeUri, signingKey, validFrom);
+            putNew(new RegisteredName(name, generation), updatingKey, nodeUri, signingKey, validFrom);
         } else {
-            if (generation != latest.getNameGeneration().getGeneration()) {
-                RegisteredName target = newGeneration(latest, name, generation);
-                validateSignature(target, null, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
-                        signature);
-                putNew(target, updatingKey, nodeUri, signingKey, validFrom);
-            } else {
-                SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
-                validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
-                        signature);
-                putExisting(latest, updatingKey, nodeUri, signingKey, validFrom);
-            }
+            log.debug("Updating the name");
+
+            SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
+            validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
+                    signature);
+            putExisting(latest, updatingKey, nodeUri, signingKey, validFrom);
         }
     }
 
@@ -238,16 +234,6 @@ public class Registry {
         }
     }
 
-    private RegisteredName newGeneration(RegisteredName latest, String name, int generation) {
-        int targetGeneration = latest == null ? 0 : latest.getNameGeneration().getGeneration() + 1;
-        if (targetGeneration != generation) {
-            throw new ServiceException(ServiceError.GENERATION_NOT_NEXT);
-        }
-        RegisteredName target = new RegisteredName();
-        target.setNameGeneration(new NameGeneration(name, generation));
-        return target;
-    }
-
     private byte[] getDigest(RegisteredName registeredName, SigningKey signingKey) {
         if (registeredName == null) {
             return Util.EMPTY_DIGEST;
@@ -273,16 +259,6 @@ public class Registry {
 
     public RegisteredName get(String name, int generation) {
         return storage.get(name, generation);
-    }
-
-    // TODO to be deleted
-    public RegisteredName getLatestGeneration(String name) {
-        return storage.getLatestGeneration(name);
-    }
-
-    // TODO to be deleted
-    public Integer getLatestGenerationNumber(String name) {
-        return storage.getLatestGenerationNumber(name);
     }
 
     public SigningKey getLatestKey(NameGeneration nameGeneration) {

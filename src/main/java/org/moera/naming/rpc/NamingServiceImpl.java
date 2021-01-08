@@ -106,9 +106,7 @@ public class NamingServiceImpl implements NamingService {
 
     @Override
     public RegisteredNameInfo getCurrentForLatest(String name) {
-        log.info("getCurrentForLatest(): name = {}", LogUtil.format(name));
-
-        return getRegisteredNameInfo(name, null);
+        return getCurrent(name, 0);
     }
 
     @Override
@@ -120,9 +118,7 @@ public class NamingServiceImpl implements NamingService {
 
     @Override
     public RegisteredNameInfo getPastForLatest(String name, long at) {
-        log.info("getPastForLatest(): name = {}, at = {}", LogUtil.format(name), at);
-
-        return getRegisteredNameInfo(name, Util.toTimestamp(at));
+        return getPast(name, 0, at);
     }
 
     private RegisteredNameInfo getRegisteredNameInfo(String name, int generation, Timestamp at) {
@@ -131,24 +127,15 @@ public class NamingServiceImpl implements NamingService {
             log.info("Name/generation is not found, returning null");
             return null;
         }
-        Integer latestGeneration = registry.getLatestGenerationNumber(name);
-        return getRegisteredNameInfo(registeredName, latestGeneration == generation, at);
+        return getRegisteredNameInfo(registeredName, at);
     }
 
-    private RegisteredNameInfo getRegisteredNameInfo(String name, Timestamp at) {
-        RegisteredName registeredName = registry.getLatestGeneration(name);
-        if (registeredName == null) {
-            log.info("Name is not found, returning null");
-            return null;
-        }
-        return getRegisteredNameInfo(registeredName, true, at);
-    }
-
-    private RegisteredNameInfo getRegisteredNameInfo(RegisteredName registeredName, boolean latest, Timestamp at) {
+    private RegisteredNameInfo getRegisteredNameInfo(RegisteredName registeredName, Timestamp at) {
         RegisteredNameInfo info = new RegisteredNameInfo();
         info.setName(registeredName.getNameGeneration().getName());
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
-        info.setLatest(latest);
+        // For backward compatibility only
+        info.setLatest(true);
         info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
         // For backward compatibility only
