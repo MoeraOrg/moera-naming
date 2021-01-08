@@ -139,7 +139,7 @@ public class NamingServiceImpl implements NamingService {
         info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
         // For backward compatibility only
-        info.setDeadline(Instant.now().plus(10, ChronoUnit.YEARS).getEpochSecond());
+        info.setDeadline(Instant.now().plus(4200, ChronoUnit.DAYS).getEpochSecond());
         SigningKey key = at == null
                 ? registry.getLatestKey(registeredName.getNameGeneration())
                 : registry.getKeyValidAt(registeredName.getNameGeneration(), at);
