@@ -14,5 +14,7 @@ CREATE TABLE signing_keys (
     generation integer NOT NULL,
     signing_key bytea NOT NULL,
     valid_from timestamp without time zone NOT NULL,
-    FOREIGN KEY (name, generation) REFERENCES registered_names (name, generation)
+    CONSTRAINT signing_keys_name_fkey
+        FOREIGN KEY (name, generation)
+            REFERENCES registered_names (name, generation)
 );
