@@ -21,8 +21,17 @@ public class Storage {
     @Inject
     private SigningKeyRepository signingKeyRepository;
 
+    public List<RegisteredName> getAll(Timestamp at, int page, int size) {
+        return registeredNameRepository.findAllAt(at, PageRequest.of(page, size));
+    }
+
     public RegisteredName get(String name, int generation) {
         return registeredNameRepository.findById(new NameGeneration(name, generation)).orElse(null);
+    }
+
+    public RegisteredName getSimilar(String name) {
+        List<RegisteredName> names = registeredNameRepository.findSimilar(name, PageRequest.of(0, 1));
+        return names.isEmpty() ? null : names.get(0);
     }
 
     public RegisteredName getLatestGeneration(String name) {

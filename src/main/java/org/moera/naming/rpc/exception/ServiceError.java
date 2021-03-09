@@ -19,7 +19,10 @@ public enum ServiceError {
     CRYPTO_EXCEPTION(13, "crypto.failure", "crypto configuration exception occured"),
     PREVIOUS_DIGEST_WRONG_LENGTH(14, "previous-digest.wrong-length", "previousDigest has wrong length"),
     PREVIOUS_DIGEST_INCORRECT(15, "previous-digest.incorrect", "previousDigest differs from the current one"),
-    GENERATION_NOT_SAME(16, "generation.not-same", "generation must be the same as the current one");
+    GENERATION_NOT_SAME(16, "generation.not-same", "generation must be the same as the current one"),
+    PAGE_INCORRECT(17, "page.incorrect", "page number is incorrect"),
+    PAGE_SIZE_INCORRECT(18, "size.incorrect", "page size is incorrect"),
+    PAGE_SIZE_TOO_LARGE(19, "size.too-large", "page size is too large");
 
     private int rpcCode;
     private String errorCode;

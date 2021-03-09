@@ -3,7 +3,9 @@ package org.moera.naming.rpc;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
@@ -121,6 +123,22 @@ public class NamingServiceImpl implements NamingService {
         return getPast(name, 0, at);
     }
 
+    @Override
+    public RegisteredNameInfo getSimilar(String name) {
+        log.info("getSimilar(): name = {}", LogUtil.format(name));
+
+        return getRegisteredNameInfo(registry.getSimilar(name), null);
+    }
+
+    @Override
+    public List<RegisteredNameInfo> getAll(long at, int page, int size) {
+        log.info("getAll(): at = {}, page = {}, size = {}", at, page, size);
+
+        return registry.getAll(Util.toTimestamp(at), page, size).stream()
+                .map(this::getRegisteredNameMinimalInfo)
+                .collect(Collectors.toList());
+    }
+
     private RegisteredNameInfo getRegisteredNameInfo(String name, int generation, Timestamp at) {
         RegisteredName registeredName = registry.get(name, generation);
         if (registeredName == null) {
@@ -131,6 +149,10 @@ public class NamingServiceImpl implements NamingService {
     }
 
     private RegisteredNameInfo getRegisteredNameInfo(RegisteredName registeredName, Timestamp at) {
+        if (registeredName == null) {
+            return null;
+        }
+
         RegisteredNameInfo info = new RegisteredNameInfo();
         info.setName(registeredName.getNameGeneration().getName());
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
@@ -148,6 +170,18 @@ public class NamingServiceImpl implements NamingService {
             info.setValidFrom(key.getValidFrom().toInstant().getEpochSecond());
         }
         info.setDigest(registeredName.getDigest());
+        return info;
+    }
+
+    private RegisteredNameInfo getRegisteredNameMinimalInfo(RegisteredName registeredName) {
+        if (registeredName == null) {
+            return null;
+        }
+
+        RegisteredNameInfo info = new RegisteredNameInfo();
+        info.setName(registeredName.getNameGeneration().getName());
+        info.setGeneration(registeredName.getNameGeneration().getGeneration());
+        info.setNodeUri(registeredName.getNodeUri());
         return info;
     }
 

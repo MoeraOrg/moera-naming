@@ -3,6 +3,7 @@ package org.moera.naming.registry;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -257,8 +258,25 @@ public class Registry {
         return operationRepository.findById(operationId).orElse(null);
     }
 
+    public List<RegisteredName> getAll(Timestamp at, int page, int size) {
+        if (page < 0) {
+            throw new ServiceException(ServiceError.PAGE_INCORRECT);
+        }
+        if (size < 1) {
+            throw new ServiceException(ServiceError.PAGE_SIZE_INCORRECT);
+        }
+        if (size > Rules.PAGE_MAX_SIZE) {
+            throw new ServiceException(ServiceError.PAGE_SIZE_TOO_LARGE);
+        }
+        return storage.getAll(at, page, size);
+    }
+
     public RegisteredName get(String name, int generation) {
         return storage.get(name, generation);
+    }
+
+    public RegisteredName getSimilar(String name) {
+        return storage.getSimilar(name.toLowerCase());
     }
 
     public SigningKey getLatestKey(NameGeneration nameGeneration) {
