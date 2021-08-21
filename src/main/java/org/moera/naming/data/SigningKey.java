@@ -13,7 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.moera.commons.util.Util;
+import org.moera.naming.util.Util;
 
 @Entity
 @Table(name = "signing_keys")
