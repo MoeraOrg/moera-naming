@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class NamingController {
 
-    private static Logger log = LoggerFactory.getLogger(NamingController.class);
+    private static final Logger log = LoggerFactory.getLogger(NamingController.class);
 
     private JsonRpcServer jsonRpcServer;
 
@@ -62,6 +62,7 @@ public class NamingController {
         try {
             Thread.sleep(period);
         } catch (InterruptedException e) {
+            // ignore
         }
     }
 

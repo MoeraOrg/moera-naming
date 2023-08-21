@@ -13,8 +13,7 @@ public class ServiceErrorResolver implements ErrorResolver {
 
     @Override
     public JsonError resolveError(Throwable throwable, Method method, List<JsonNode> list) {
-        if (throwable instanceof ServiceException) {
-            ServiceException e = (ServiceException) throwable;
+        if (throwable instanceof ServiceException e) {
             return new JsonError(e.getRpcCode(), e.getMessage(), null);
         }
         return DefaultErrorResolver.INSTANCE.resolveError(throwable, method, list);

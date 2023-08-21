@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OperationRunner {
 
-    private static Logger log = LoggerFactory.getLogger(OperationRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(OperationRunner.class);
 
     @Inject
     private Config config;

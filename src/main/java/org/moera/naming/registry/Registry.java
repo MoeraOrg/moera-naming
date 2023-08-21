@@ -25,12 +25,12 @@ import org.moera.naming.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 @Service
 public class Registry {
 
-    private static Logger log = LoggerFactory.getLogger(Registry.class);
+    private static final Logger log = LoggerFactory.getLogger(Registry.class);
 
     @Inject
     private Storage storage;
@@ -119,7 +119,7 @@ public class Registry {
         log.info("putNew(): name = {}, generation = {}",
                 LogUtil.format(target.getNameGeneration().getName()), target.getNameGeneration().getGeneration());
 
-        if (!StringUtils.isEmpty(nodeUri)) {
+        if (!ObjectUtils.isEmpty(nodeUri)) {
             target.setNodeUri(nodeUri);
         }
         if (updatingKey == null) {
@@ -154,7 +154,7 @@ public class Registry {
         log.info("putExisting(): name = {}, generation = {}",
                 LogUtil.format(target.getNameGeneration().getName()), target.getNameGeneration().getGeneration());
 
-        if (!StringUtils.isEmpty(nodeUri)) {
+        if (!ObjectUtils.isEmpty(nodeUri)) {
             target.setNodeUri(nodeUri);
         }
         if (updatingKey != null) {

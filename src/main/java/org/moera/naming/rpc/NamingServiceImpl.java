@@ -20,13 +20,13 @@ import org.moera.naming.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 @Component
 @AutoJsonRpcServiceImpl
 public class NamingServiceImpl implements NamingService {
 
-    private static Logger log = LoggerFactory.getLogger(NamingServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(NamingServiceImpl.class);
 
     @Inject
     private Registry registry;
@@ -49,7 +49,7 @@ public class NamingServiceImpl implements NamingService {
                 LogUtil.format(signingKey), LogUtil.formatTimestamp(validFrom), LogUtil.format(previousDigest),
                 LogUtil.format(signature));
 
-        if (StringUtils.isEmpty(name)) {
+        if (ObjectUtils.isEmpty(name)) {
             throw new ServiceException(ServiceError.NAME_EMPTY);
         }
         if (name.length() > Rules.NAME_MAX_LENGTH) {

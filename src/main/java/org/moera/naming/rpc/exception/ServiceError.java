@@ -24,9 +24,9 @@ public enum ServiceError {
     PAGE_SIZE_INCORRECT(18, "size.incorrect", "page size is incorrect"),
     PAGE_SIZE_TOO_LARGE(19, "size.too-large", "page size is too large");
 
-    private int rpcCode;
-    private String errorCode;
-    private String message;
+    private final int rpcCode;
+    private final String errorCode;
+    private final String message;
 
     ServiceError(int rpcCode, String errorCode, String message) {
         this.rpcCode = rpcCode;
