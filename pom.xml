@@ -114,7 +114,7 @@
         <dependency>
             <groupId>org.moera</groupId>
             <artifactId>moera-commons</artifactId>
-            <version>0.9.0.1</version>
+            <version>0.10.0</version>
         </dependency>
 	</dependencies>
 

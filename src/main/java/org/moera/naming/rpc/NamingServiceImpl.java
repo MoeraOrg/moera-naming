@@ -1,8 +1,6 @@
 package org.moera.naming.rpc;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -107,20 +105,10 @@ public class NamingServiceImpl implements NamingService {
     }
 
     @Override
-    public RegisteredNameInfo getCurrentForLatest(String name) {
-        return getCurrent(name, 0);
-    }
-
-    @Override
     public RegisteredNameInfo getPast(String name, int generation, long at) {
         log.info("getPast(): name = {}, generation = {}, at = {}", LogUtil.format(name), generation, at);
 
         return getRegisteredNameInfo(name, generation, Util.toTimestamp(at));
-    }
-
-    @Override
-    public RegisteredNameInfo getPastForLatest(String name, long at) {
-        return getPast(name, 0, at);
     }
 
     @Override
@@ -156,12 +144,8 @@ public class NamingServiceImpl implements NamingService {
         RegisteredNameInfo info = new RegisteredNameInfo();
         info.setName(registeredName.getNameGeneration().getName());
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
-        // For backward compatibility only
-        info.setLatest(true);
         info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
-        // For backward compatibility only
-        info.setDeadline(Instant.now().plus(4200, ChronoUnit.DAYS).getEpochSecond());
         SigningKey key = at == null
                 ? registry.getLatestKey(registeredName.getNameGeneration())
                 : registry.getKeyValidAt(registeredName.getNameGeneration(), at);
@@ -183,11 +167,6 @@ public class NamingServiceImpl implements NamingService {
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
         info.setNodeUri(registeredName.getNodeUri());
         return info;
-    }
-
-    @Override
-    public boolean isFree(String name) {
-        return isFree(name, 0);
     }
 
     @Override
