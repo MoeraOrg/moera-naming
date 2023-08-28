@@ -13,6 +13,10 @@ public class Util {
         return Timestamp.from(Instant.now());
     }
 
+    public static Long toEpochSecond(Timestamp timestamp) {
+        return timestamp != null ? timestamp.toInstant().getEpochSecond() : null;
+    }
+
     public static Timestamp toTimestamp(Long epochSecond) {
         return epochSecond != null ? Timestamp.from(Instant.ofEpochSecond(epochSecond)) : null;
     }

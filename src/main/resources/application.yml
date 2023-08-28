@@ -27,7 +27,7 @@ spring:
     # stripped before adding them to the entity manager)
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL82Dialect  # The SQL dialect makes Hibernate generate better SQL for the chosen database
+        dialect: org.hibernate.dialect.PostgreSQLDialect  # The SQL dialect makes Hibernate generate better SQL for the chosen database
 
   mustache:
     suffix: .m.html

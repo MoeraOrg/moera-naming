@@ -187,15 +187,16 @@ public class Operation {
     public OperationStatusInfo toOperationStatusInfo() {
         OperationStatusInfo info = new OperationStatusInfo();
         info.setOperationId(getId());
+        info.setName(getName());
+        info.setGeneration(getGeneration());
         info.setStatus(getStatus());
-        info.setAdded(getAdded());
-        info.setCompleted(getCompleted());
+        info.setAdded(Util.toEpochSecond(getAdded()));
+        info.setCompleted(Util.toEpochSecond(getCompleted()));
         info.setErrorCode(getErrorCode());
         ServiceError serviceError = ServiceError.forCode(getErrorCode());
         if (serviceError != null) {
             info.setErrorMessage(serviceError.getMessage());
         }
-        info.setGeneration(getGeneration());
         return info;
     }
 

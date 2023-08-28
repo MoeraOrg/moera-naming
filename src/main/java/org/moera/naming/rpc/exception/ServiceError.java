@@ -22,7 +22,8 @@ public enum ServiceError {
     GENERATION_NOT_SAME(16, "generation.not-same", "generation must be the same as the current one"),
     PAGE_INCORRECT(17, "page.incorrect", "page number is incorrect"),
     PAGE_SIZE_INCORRECT(18, "size.incorrect", "page size is incorrect"),
-    PAGE_SIZE_TOO_LARGE(19, "size.too-large", "page size is too large");
+    PAGE_SIZE_TOO_LARGE(19, "size.too-large", "page size is too large"),
+    ENDPOINT_WRONG(20, "endpoint.wrong", "wrong service endpoint");
 
     private final int rpcCode;
     private final String errorCode;

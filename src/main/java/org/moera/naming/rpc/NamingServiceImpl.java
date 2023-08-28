@@ -146,12 +146,13 @@ public class NamingServiceImpl implements NamingService {
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
         info.setUpdatingKey(registeredName.getUpdatingKey());
         info.setNodeUri(registeredName.getNodeUri());
+        info.setCreated(Util.toEpochSecond(registeredName.getCreated()));
         SigningKey key = at == null
                 ? registry.getLatestKey(registeredName.getNameGeneration())
                 : registry.getKeyValidAt(registeredName.getNameGeneration(), at);
         if (key != null) {
             info.setSigningKey(key.getSigningKey());
-            info.setValidFrom(key.getValidFrom().toInstant().getEpochSecond());
+            info.setValidFrom(Util.toEpochSecond(key.getValidFrom()));
         }
         info.setDigest(registeredName.getDigest());
         return info;

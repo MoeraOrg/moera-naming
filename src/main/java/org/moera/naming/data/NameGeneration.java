@@ -1,5 +1,6 @@
 package org.moera.naming.data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.Embeddable;
@@ -11,6 +12,7 @@ import org.moera.naming.rpc.Rules;
 @Embeddable
 public class NameGeneration implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -6236816230823929126L;
 
     @NotNull
@@ -22,10 +24,6 @@ public class NameGeneration implements Serializable {
 
     public NameGeneration() {
         this("", 0);
-    }
-
-    public NameGeneration(String name) {
-        this(name, 0);
     }
 
     public NameGeneration(String name, int generation) {
@@ -56,10 +54,9 @@ public class NameGeneration implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof NameGeneration)) {
+        if (!(obj instanceof NameGeneration peer)) {
             return false;
         }
-        NameGeneration peer = (NameGeneration) obj;
         return Objects.equals(name, peer.name) && generation == peer.generation;
     }
 

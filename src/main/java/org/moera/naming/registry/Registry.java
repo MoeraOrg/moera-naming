@@ -205,10 +205,10 @@ public class Registry {
 
             if (signingKey != null) {
                 eSigningKey = signingKey;
-                eValidFrom = validFrom.toInstant().getEpochSecond();
+                eValidFrom = Util.toEpochSecond(validFrom);
             } else if (latestKey != null) {
                 eSigningKey = latestKey.getSigningKey();
-                eValidFrom = latestKey.getValidFrom().toInstant().getEpochSecond();
+                eValidFrom = Util.toEpochSecond(latestKey.getValidFrom());
             }
 
             Object putCall = new PutCallFingerprint(
@@ -246,7 +246,7 @@ public class Registry {
                     registeredName.getUpdatingKey(),
                     registeredName.getNodeUri(),
                     signingKey != null ? signingKey.getSigningKey() : null,
-                    signingKey != null ? signingKey.getValidFrom().toInstant().getEpochSecond() : 0,
+                    signingKey != null ? Util.toEpochSecond(signingKey.getValidFrom()) : 0,
                     registeredName.getDigest()));
         } catch (CryptoException e) {
             log.error("Crypto exception:", e);
