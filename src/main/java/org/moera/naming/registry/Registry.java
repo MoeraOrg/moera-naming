@@ -11,7 +11,6 @@ import javax.transaction.Transactional;
 import org.moera.commons.crypto.CryptoException;
 import org.moera.commons.crypto.CryptoUtil;
 import org.moera.commons.util.LogUtil;
-import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
 import org.moera.naming.data.RegisteredName;
@@ -102,7 +101,8 @@ public class Registry {
         } else {
             log.debug("Updating the name");
 
-            SigningKey latestKey = storage.getLatestKey(latest.getNameGeneration());
+            SigningKey latestKey = storage.getLatestKey(
+                    latest.getNameGeneration().getName(), latest.getNameGeneration().getGeneration());
             validateSignature(latest, latestKey, updatingKey, nodeUri, signingKey, validFrom, previousDigest,
                     signature);
             putExisting(latest, updatingKey, nodeUri, signingKey, validFrom);
@@ -271,6 +271,19 @@ public class Registry {
         return storage.getAll(at, page, size);
     }
 
+    public List<RegisteredName> getAllNewer(Timestamp at, int page, int size) {
+        if (page < 0) {
+            throw new ServiceException(ServiceError.PAGE_INCORRECT);
+        }
+        if (size < 1) {
+            throw new ServiceException(ServiceError.PAGE_SIZE_INCORRECT);
+        }
+        if (size > Rules.PAGE_MAX_SIZE) {
+            throw new ServiceException(ServiceError.PAGE_SIZE_TOO_LARGE);
+        }
+        return storage.getAllNewer(at, page, size);
+    }
+
     public RegisteredName get(String name, int generation) {
         return storage.get(name, generation);
     }
@@ -279,12 +292,16 @@ public class Registry {
         return storage.getSimilar(name.toLowerCase());
     }
 
-    public SigningKey getLatestKey(NameGeneration nameGeneration) {
-        return storage.getLatestKey(nameGeneration);
+    public List<SigningKey> getAllKeys(String name, int generation) {
+        return storage.getAllKeys(name, generation);
     }
 
-    public SigningKey getKeyValidAt(NameGeneration nameGeneration, Timestamp at) {
-        return storage.getKeyValidAt(nameGeneration, at);
+    public SigningKey getLatestKey(String name, int generation) {
+        return storage.getLatestKey(name, generation);
+    }
+
+    public SigningKey getKeyValidAt(String name, int generation, Timestamp at) {
+        return storage.getKeyValidAt(name, generation, at);
     }
 
 }

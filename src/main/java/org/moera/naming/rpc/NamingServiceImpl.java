@@ -119,10 +119,28 @@ public class NamingServiceImpl implements NamingService {
     }
 
     @Override
+    public List<SigningKeyInfo> getAllKeys(String name, int generation) {
+        log.info("getAllKeys(): name = {}, generation = {}", LogUtil.format(name), generation);
+
+        return registry.getAllKeys(name, generation).stream()
+                .map(this::getSigningKeyInfo)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<RegisteredNameInfo> getAll(long at, int page, int size) {
         log.info("getAll(): at = {}, page = {}, size = {}", at, page, size);
 
         return registry.getAll(Util.toTimestamp(at), page, size).stream()
+                .map(this::getRegisteredNameMinimalInfo)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RegisteredNameInfo> getAllNewer(long at, int page, int size) {
+        log.info("getAllNewer(): at = {}, page = {}, size = {}", at, page, size);
+
+        return registry.getAllNewer(Util.toTimestamp(at), page, size).stream()
                 .map(this::getRegisteredNameMinimalInfo)
                 .collect(Collectors.toList());
     }
@@ -148,8 +166,8 @@ public class NamingServiceImpl implements NamingService {
         info.setNodeUri(registeredName.getNodeUri());
         info.setCreated(Util.toEpochSecond(registeredName.getCreated()));
         SigningKey key = at == null
-                ? registry.getLatestKey(registeredName.getNameGeneration())
-                : registry.getKeyValidAt(registeredName.getNameGeneration(), at);
+                ? registry.getLatestKey(info.getName(), info.getGeneration())
+                : registry.getKeyValidAt(info.getName(), info.getGeneration(), at);
         if (key != null) {
             info.setSigningKey(key.getSigningKey());
             info.setValidFrom(Util.toEpochSecond(key.getValidFrom()));
@@ -168,6 +186,17 @@ public class NamingServiceImpl implements NamingService {
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
         info.setNodeUri(registeredName.getNodeUri());
         info.setCreated(Util.toEpochSecond(registeredName.getCreated()));
+        return info;
+    }
+
+    private SigningKeyInfo getSigningKeyInfo(SigningKey signingKey) {
+        if (signingKey == null) {
+            return null;
+        }
+
+        SigningKeyInfo info = new SigningKeyInfo();
+        info.setKey(signingKey.getSigningKey());
+        info.setValidFrom(Util.toEpochSecond(signingKey.getValidFrom()));
         return info;
     }
 

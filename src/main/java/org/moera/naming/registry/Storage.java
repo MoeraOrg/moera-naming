@@ -10,6 +10,7 @@ import org.moera.naming.data.RegisteredNameRepository;
 import org.moera.naming.data.SigningKey;
 import org.moera.naming.data.SigningKeyRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +26,10 @@ public class Storage {
         return registeredNameRepository.findAllAt(at, PageRequest.of(page, size));
     }
 
+    public List<RegisteredName> getAllNewer(Timestamp at, int page, int size) {
+        return registeredNameRepository.findAllNewer(at, PageRequest.of(page, size));
+    }
+
     public RegisteredName get(String name, int generation) {
         return registeredNameRepository.findById(new NameGeneration(name, generation)).orElse(null);
     }
@@ -34,22 +39,19 @@ public class Storage {
         return names.isEmpty() ? null : names.get(0);
     }
 
-    public RegisteredName getLatestGeneration(String name) {
-        List<RegisteredName> generations = registeredNameRepository.findAllGenerations(name, PageRequest.of(0, 1));
-        return generations.isEmpty() ? null : generations.get(0);
+    public List<SigningKey> getAllKeys(String name, int generation) {
+        return signingKeyRepository.findAllKeys(new NameGeneration(name, generation), Pageable.unpaged());
     }
 
-    public Integer getLatestGenerationNumber(String name) {
-        return registeredNameRepository.findLatestGenerationNumber(name);
-    }
-
-    public SigningKey getLatestKey(NameGeneration nameGeneration) {
-        List<SigningKey> keys = signingKeyRepository.findAllKeys(nameGeneration, PageRequest.of(0, 1));
+    public SigningKey getLatestKey(String name, int generation) {
+        List<SigningKey> keys = signingKeyRepository.findAllKeys(new NameGeneration(name, generation),
+                PageRequest.of(0, 1));
         return keys.isEmpty() ? null : keys.get(0);
     }
 
-    public SigningKey getKeyValidAt(NameGeneration nameGeneration, Timestamp at) {
-        List<SigningKey> keys = signingKeyRepository.findKeysValidBefore(nameGeneration, at, PageRequest.of(0, 1));
+    public SigningKey getKeyValidAt(String name, int generation, Timestamp at) {
+        List<SigningKey> keys = signingKeyRepository.findKeysValidBefore(new NameGeneration(name, generation), at,
+                PageRequest.of(0, 1));
         return keys.isEmpty() ? null : keys.get(0);
     }
 
