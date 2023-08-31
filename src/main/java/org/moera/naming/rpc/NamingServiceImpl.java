@@ -167,6 +167,7 @@ public class NamingServiceImpl implements NamingService {
         info.setName(registeredName.getNameGeneration().getName());
         info.setGeneration(registeredName.getNameGeneration().getGeneration());
         info.setNodeUri(registeredName.getNodeUri());
+        info.setCreated(Util.toEpochSecond(registeredName.getCreated()));
         return info;
     }
 
