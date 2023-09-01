@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.moera.commons.util.LogUtil;
+import org.moera.naming.Config;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
@@ -25,6 +26,9 @@ import org.springframework.util.ObjectUtils;
 public class NamingServiceImpl implements NamingService {
 
     private static final Logger log = LoggerFactory.getLogger(NamingServiceImpl.class);
+
+    @Inject
+    private Config config;
 
     @Inject
     private Registry registry;
@@ -55,6 +59,9 @@ public class NamingServiceImpl implements NamingService {
         }
         if (!Rules.isNameValid(name)) {
             throw new ServiceException(ServiceError.NAME_FORBIDDEN_CHARS);
+        }
+        if (!config.isGenerationSupported(generation)) {
+            throw new ServiceException(ServiceError.GENERATION_RESERVED);
         }
         if (updatingKey != null && updatingKey.length != Rules.PUBLIC_KEY_LENGTH) {
             throw new ServiceException(ServiceError.UPDATING_KEY_WRONG_LENGTH);

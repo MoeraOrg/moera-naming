@@ -23,7 +23,8 @@ public enum ServiceError {
     PAGE_INCORRECT(17, "page.incorrect", "page number is incorrect"),
     PAGE_SIZE_INCORRECT(18, "size.incorrect", "page size is incorrect"),
     PAGE_SIZE_TOO_LARGE(19, "size.too-large", "page size is too large"),
-    ENDPOINT_WRONG(20, "endpoint.wrong", "wrong service endpoint");
+    ENDPOINT_WRONG(20, "endpoint.wrong", "wrong service endpoint"),
+    GENERATION_RESERVED(21, "generation.reserved", "generation is reserved");
 
     private final int rpcCode;
     private final String errorCode;

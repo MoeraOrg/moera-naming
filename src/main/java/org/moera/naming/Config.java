@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class Config {
 
+    @Value("${naming.generations}")
+    private int[] generations;
+
     @Value("${naming.operation-rate.average}")
     private int averageOperationRate;
 
@@ -14,6 +17,26 @@ public class Config {
 
     @Value("${naming.mock-network-latency}")
     private boolean mockNetworkLatency;
+
+    public int[] getGenerations() {
+        return generations;
+    }
+
+    public void setGenerations(int[] generations) {
+        this.generations = generations;
+    }
+
+    public boolean isGenerationSupported(int generation) {
+        if (generations == null || generations.length == 0) {
+            return true;
+        }
+        for (int g : generations) {
+            if (g == generation) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public int getAverageOperationRate() {
         return averageOperationRate;

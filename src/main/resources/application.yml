@@ -33,6 +33,8 @@ spring:
     suffix: .m.html
 
 naming:
+  generations: []
+
   operation-rate: # Operations per 10 seconds
     average: 1
     max: 4
