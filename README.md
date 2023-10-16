@@ -1,27 +1,23 @@
 # Moera Naming Server
 
-Live network: https://web.moera.org
+## Resources
 
-Read more about Moera at https://moera.org
+* Live network: https://web.moera.org
+* Read more about Moera at https://moera.org
+* Learn more about Moera naming servers: http://moera.org/overview/naming.html
+* Bugs and feature requests: https://github.com/MoeraOrg/moera-issues/issues
+* How to set up a complete Moera Development Environment:
+  http://moera.org/development/development-environment.html
 
-Learn more about Moera naming servers: http://moera.org/overview/naming.html
+## Installation instructions
 
-Bugs and feature requests: https://github.com/MoeraOrg/moera-issues/issues
-
-How to setup a complete Moera Development Environment: http://moera.org/development/setup/index.html
-
-Installation instructions:
-
-1. As prerequisites you need to have Java 11+ and PostgreSQL 9.6+
-   installed. In all major Linux distributions you can install them from
+1. As prerequisites, you need to have Java 17+ and PostgreSQL 9.6+
+   installed. In all major Linux distributions, you can install them from
    the main package repository.
 2. Create a PostgreSQL user `<username>` with password `<password>` and
-   an empty database `<dbname>` owned by this user (see detailed
-   instructions here:
-   http://moera.org/development/setup/create-db.html).
+   an empty database `<dbname>` owned by this user (see [detailed instructions][1]).
 3. Go to the source directory.
-4. Create `src/main/resources/application-dev.yml` with the following
-   content:
+4. Create `application-dev.yml` file with the following content:
    
    ```yaml
    spring:
@@ -41,3 +37,5 @@ Installation instructions:
      port: <port number>
    ```
 6. Execute `./run` script.
+
+[1]: https://moera.org/administration/installation/create-db.html
