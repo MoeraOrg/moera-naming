@@ -1,20 +1,16 @@
 package org.moera.naming.rpc.exception;
 
-public class ServiceException extends RuntimeException {
+public class ServiceException extends JsonRpcException {
 
-    private final ServiceError serviceError;
+    private final String errorCode;
 
     public ServiceException(ServiceError serviceError) {
-        super(serviceError.getErrorCode() + ": " + serviceError.getMessage());
-        this.serviceError = serviceError;
-    }
-
-    public int getRpcCode() {
-        return serviceError.getRpcCode();
+        super(serviceError.getRpcCode(), serviceError.getErrorCode() + ": " + serviceError.getMessage());
+        this.errorCode = serviceError.getErrorCode();
     }
 
     public String getErrorCode() {
-        return serviceError.getErrorCode();
+        return errorCode;
     }
 
 }

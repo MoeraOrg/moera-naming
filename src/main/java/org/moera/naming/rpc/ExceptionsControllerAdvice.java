@@ -1,8 +1,11 @@
 package org.moera.naming.rpc;
 
-import com.googlecode.jsonrpc4j.ErrorResolver;
+import org.moera.naming.rpc.exception.JsonRpcError;
+import org.moera.naming.rpc.exception.JsonRpcException;
 import org.moera.naming.rpc.exception.ServiceError;
+import org.moera.naming.rpc.exception.ServiceException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -11,28 +14,43 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ExceptionsControllerAdvice {
 
-    public static class ErrorResponse {
+    private final ThreadLocal<Object> requestId = new ThreadLocal<>();
 
-        private ErrorResolver.JsonError error;
-
-        public ErrorResponse(ServiceError error) {
-            this.error = new ErrorResolver.JsonError(error.getRpcCode(), error.getMessage(), null);
-        }
-
-        public ErrorResolver.JsonError getError() {
-            return error;
-        }
-
-        public void setError(ErrorResolver.JsonError error) {
-            this.error = error;
-        }
-
+    public void setRequestId(Object requestId) {
+        this.requestId.set(requestId);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse methodNotSupported(HttpRequestMethodNotSupportedException e) {
-        return new ErrorResponse(ServiceError.ENDPOINT_WRONG);
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public JsonRpcResponse exception(Throwable e) {
+        return new JsonRpcResponse(requestId.get(), JsonRpcError.PARSE_ERROR);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<JsonRpcResponse> jsonRpcException(JsonRpcException e) {
+        var response = new JsonRpcResponse(requestId.get(), e.getRpcCode(), e.getMessage());
+        if (e.getRpcCode() == JsonRpcError.INVALID_REQUEST.getCode()) {
+            return ResponseEntity.badRequest().body(response);
+        }
+        if (e.getRpcCode() == JsonRpcError.METHOD_NOT_FOUND.getCode()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        return ResponseEntity.internalServerError().body(response);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<JsonRpcResponse> serviceException(ServiceException e) {
+        var response = new JsonRpcResponse(requestId.get(), e.getRpcCode(), e.getMessage());
+        if (e.getRpcCode() == ServiceError.ENDPOINT_WRONG.getRpcCode()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public JsonRpcResponse methodNotSupported(HttpRequestMethodNotSupportedException e) {
+        return new JsonRpcResponse(requestId.get(), ServiceError.ENDPOINT_WRONG);
     }
 
 }

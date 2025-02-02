@@ -6,7 +6,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 
-import com.googlecode.jsonrpc4j.spring.AutoJsonRpcServiceImpl;
 import org.moera.commons.util.LogUtil;
 import org.moera.naming.Config;
 import org.moera.naming.data.Operation;
@@ -22,10 +21,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
-@AutoJsonRpcServiceImpl
-public class NamingServiceImpl implements NamingService {
+public class NamingService {
 
-    private static final Logger log = LoggerFactory.getLogger(NamingServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(NamingService.class);
 
     @Inject
     private Config config;
@@ -33,7 +31,7 @@ public class NamingServiceImpl implements NamingService {
     @Inject
     private Registry registry;
 
-    @Override
+    @JsonRpcMethod
     public UUID put(
             String name,
             int generation,
@@ -42,8 +40,8 @@ public class NamingServiceImpl implements NamingService {
             byte[] signingKey,
             Long validFrom,
             byte[] previousDigest,
-            byte[] signature) {
-
+            byte[] signature
+    ) {
         log.info("put(): name = {}, generation = {}, updatingKey = {}, nodeUri = {},"
                 + " signingKey = {}, validFrom = {}, previousDigest = {},"
                 + " signature = {}",
@@ -89,7 +87,7 @@ public class NamingServiceImpl implements NamingService {
                 previousDigest);
     }
 
-    @Override
+    @JsonRpcMethod
     public OperationStatusInfo getStatus(UUID operationId) {
         log.info("getStatus(): operationId = {}", LogUtil.format(operationId));
 
@@ -104,28 +102,28 @@ public class NamingServiceImpl implements NamingService {
         return operation.toOperationStatusInfo();
     }
 
-    @Override
+    @JsonRpcMethod
     public RegisteredNameInfo getCurrent(String name, int generation) {
         log.info("getCurrent(): name = {}, generation = {}", LogUtil.format(name), generation);
 
         return getRegisteredNameInfo(name, generation, null);
     }
 
-    @Override
+    @JsonRpcMethod
     public RegisteredNameInfo getPast(String name, int generation, long at) {
         log.info("getPast(): name = {}, generation = {}, at = {}", LogUtil.format(name), generation, at);
 
         return getRegisteredNameInfo(name, generation, Util.toTimestamp(at));
     }
 
-    @Override
+    @JsonRpcMethod
     public RegisteredNameInfo getSimilar(String name) {
         log.info("getSimilar(): name = {}", LogUtil.format(name));
 
         return getRegisteredNameInfo(registry.getSimilar(name), null);
     }
 
-    @Override
+    @JsonRpcMethod
     public List<SigningKeyInfo> getAllKeys(String name, int generation) {
         log.info("getAllKeys(): name = {}, generation = {}", LogUtil.format(name), generation);
 
@@ -134,7 +132,7 @@ public class NamingServiceImpl implements NamingService {
                 .collect(Collectors.toList());
     }
 
-    @Override
+    @JsonRpcMethod
     public List<RegisteredNameInfo> getAll(long at, int page, int size) {
         log.info("getAll(): at = {}, page = {}, size = {}", at, page, size);
 
@@ -143,7 +141,7 @@ public class NamingServiceImpl implements NamingService {
                 .collect(Collectors.toList());
     }
 
-    @Override
+    @JsonRpcMethod
     public List<RegisteredNameInfo> getAllNewer(long at, int page, int size) {
         log.info("getAllNewer(): at = {}, page = {}, size = {}", at, page, size);
 
@@ -207,7 +205,7 @@ public class NamingServiceImpl implements NamingService {
         return info;
     }
 
-    @Override
+    @JsonRpcMethod
     public boolean isFree(String name, int generation) {
         log.info("isFree(): name = {}, generation = {}", LogUtil.format(name), LogUtil.format(generation));
 

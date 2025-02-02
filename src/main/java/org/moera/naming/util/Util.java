@@ -2,6 +2,7 @@ package org.moera.naming.util;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Base64;
 
 import org.moera.naming.rpc.Rules;
 
@@ -19,6 +20,10 @@ public class Util {
 
     public static Timestamp toTimestamp(Long epochSecond) {
         return epochSecond != null ? Timestamp.from(Instant.ofEpochSecond(epochSecond)) : null;
+    }
+
+    public static byte[] base64decode(String s) {
+        return Base64.getDecoder().decode(s);
     }
 
     public static int random(int min, int max) {
