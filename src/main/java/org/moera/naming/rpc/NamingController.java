@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.moera.naming.Config;
 import org.moera.naming.rpc.exception.JsonRpcError;
 import org.moera.naming.rpc.exception.JsonRpcException;
@@ -64,14 +65,15 @@ public class NamingController {
             if (!method.isAnnotationPresent(JsonRpcMethod.class)) {
                 throw new JsonRpcException(JsonRpcError.METHOD_NOT_FOUND);
             }
-            if (method.getParameterCount() > 0 && request.getParams() == null) {
+            JsonNode params = request.getParams();
+            if (method.getParameterCount() > 0 && params == null || !params.isObject() && !params.isArray()) {
                 throw new JsonRpcException(JsonRpcError.METHOD_PARAMS_INVALID);
             }
             Object[] values = new Object[method.getParameterCount()];
             try {
                 for (int i = 0; i < method.getParameterCount(); i++) {
                     Parameter parameter = method.getParameters()[i];
-                    String valueS = request.getParams().get(parameter.getName());
+                    String valueS = (params.isObject() ? params.get(parameter.getName()) : params.get(i)).asText();
                     Object value;
                     if (valueS == null) {
                         value = null;

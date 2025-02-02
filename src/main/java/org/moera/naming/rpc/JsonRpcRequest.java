@@ -1,15 +1,14 @@
 package org.moera.naming.rpc;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonRpcRequest {
 
     private final String jsonrpc = "2.0";
     private String method;
-    private Map<String, String> params;
+    private JsonNode params;
     private Object id;
 
     public String getJsonrpc() {
@@ -24,11 +23,11 @@ public class JsonRpcRequest {
         this.method = method;
     }
 
-    public Map<String, String> getParams() {
+    public JsonNode getParams() {
         return params;
     }
 
-    public void setParams(Map<String, String> params) {
+    public void setParams(JsonNode params) {
         this.params = params;
     }
 
