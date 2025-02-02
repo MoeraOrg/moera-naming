@@ -4,9 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.UUID;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.validation.Valid;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.moera.naming.Config;

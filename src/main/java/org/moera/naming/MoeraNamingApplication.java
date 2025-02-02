@@ -1,7 +1,7 @@
 package org.moera.naming;
 
 import java.security.Security;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.moera.naming.rpc.CleanRequestIdInterceptor;

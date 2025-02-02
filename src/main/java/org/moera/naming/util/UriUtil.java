@@ -1,6 +1,6 @@
 package org.moera.naming.util;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.util.UriComponents;

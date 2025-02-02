@@ -5,8 +5,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import org.moera.commons.crypto.CryptoException;
 import org.moera.commons.crypto.CryptoUtil;

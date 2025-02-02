@@ -1,6 +1,6 @@
 package org.moera.naming.ui;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.moera.naming.util.UriUtil;
 import org.springframework.stereotype.Controller;

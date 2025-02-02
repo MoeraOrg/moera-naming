@@ -1,8 +1,8 @@
 package org.moera.naming.registry;
 
 import java.util.List;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 
 import org.moera.naming.Config;
 import org.moera.naming.data.Operation;

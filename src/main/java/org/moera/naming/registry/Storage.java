@@ -2,7 +2,7 @@ package org.moera.naming.registry;
 
 import java.sql.Timestamp;
 import java.util.List;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.moera.naming.data.NameGeneration;
 import org.moera.naming.data.RegisteredName;
