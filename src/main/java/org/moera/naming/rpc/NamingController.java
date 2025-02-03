@@ -73,9 +73,13 @@ public class NamingController {
             try {
                 for (int i = 0; i < method.getParameterCount(); i++) {
                     Parameter parameter = method.getParameters()[i];
-                    String valueS = (params.isObject() ? params.get(parameter.getName()) : params.get(i)).asText();
+                    JsonNode parameterNode = params.isObject() ? params.get(parameter.getName()) : params.get(i);
+                    String valueS = parameterNode.isNull() ? null : parameterNode.asText();
                     Object value;
                     if (valueS == null) {
+                        if (parameter.getType().isPrimitive()) {
+                            throw new JsonRpcException(JsonRpcError.METHOD_PARAMS_INVALID);
+                        }
                         value = null;
                     } else if (parameter.getType().equals(String.class)) {
                         value = valueS;
