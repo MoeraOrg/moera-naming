@@ -6,9 +6,10 @@
     <groupId>org.moera</groupId>
     <artifactId>moera-naming</artifactId>
     <version>0.5.1-SNAPSHOT</version>
+    <packaging>war</packaging>
+
     <name>moera-naming</name>
     <description>Moera naming server</description>
-    <packaging>war</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
