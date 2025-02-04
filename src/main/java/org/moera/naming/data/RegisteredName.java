@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import org.moera.naming.rpc.Rules;
+import org.moera.lib.Rules;
 import org.moera.naming.util.Util;
 
 @Entity

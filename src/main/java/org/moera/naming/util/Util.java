@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Base64;
 
-import org.moera.naming.rpc.Rules;
+import org.moera.lib.Rules;
 
 public class Util {
 

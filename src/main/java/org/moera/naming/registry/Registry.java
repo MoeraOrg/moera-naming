@@ -8,16 +8,16 @@ import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import org.moera.commons.crypto.CryptoException;
-import org.moera.commons.crypto.CryptoUtil;
-import org.moera.commons.util.LogUtil;
+import org.moera.lib.Rules;
+import org.moera.lib.crypto.CryptoException;
+import org.moera.lib.crypto.CryptoUtil;
+import org.moera.lib.naming.Fingerprints;
+import org.moera.lib.naming.types.OperationStatus;
+import org.moera.lib.util.LogUtil;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
-import org.moera.naming.rpc.OperationStatus;
-import org.moera.naming.rpc.PutCallFingerprint;
-import org.moera.naming.rpc.Rules;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.rpc.exception.ServiceException;
 import org.moera.naming.util.Util;
@@ -211,19 +211,21 @@ public class Registry {
                 eValidFrom = Util.toEpochSecond(latestKey.getValidFrom());
             }
 
-            Object putCall = new PutCallFingerprint(
-                    target.getNameGeneration().getName(),
-                    target.getNameGeneration().getGeneration(),
-                    updatingKey != null ? updatingKey : target.getUpdatingKey(),
-                    nodeUri != null ? nodeUri : target.getNodeUri(),
-                    eSigningKey,
-                    eValidFrom,
-                    previousDigest);
+            byte[] putCall = Fingerprints.putCall(
+                target.getNameGeneration().getName(),
+                target.getNameGeneration().getGeneration(),
+                updatingKey != null ? updatingKey : target.getUpdatingKey(),
+                nodeUri != null ? nodeUri : target.getNodeUri(),
+                eSigningKey,
+                eValidFrom,
+                previousDigest
+            );
 
             if (log.isDebugEnabled()) {
-                log.debug("Verifying signature: fingerprint = {}, signature = {}, target updatingKey = {}",
-                        LogUtil.format(CryptoUtil.fingerprint(putCall)), LogUtil.format(signature),
-                        LogUtil.format(target.getUpdatingKey()));
+                log.debug(
+                    "Verifying signature: fingerprint = {}, signature = {}, target updatingKey = {}",
+                    LogUtil.format(putCall), LogUtil.format(signature), LogUtil.format(target.getUpdatingKey())
+                );
             }
 
             if (!CryptoUtil.verify(putCall, signature, target.getUpdatingKey())) {
@@ -240,14 +242,15 @@ public class Registry {
             return Util.EMPTY_DIGEST;
         }
         try {
-            return CryptoUtil.digest(new PutCallFingerprint(
-                    registeredName.getNameGeneration().getName(),
-                    registeredName.getNameGeneration().getGeneration(),
-                    registeredName.getUpdatingKey(),
-                    registeredName.getNodeUri(),
-                    signingKey != null ? signingKey.getSigningKey() : null,
-                    signingKey != null ? Util.toEpochSecond(signingKey.getValidFrom()) : 0,
-                    registeredName.getDigest()));
+            return CryptoUtil.digest(Fingerprints.putCall(
+                registeredName.getNameGeneration().getName(),
+                registeredName.getNameGeneration().getGeneration(),
+                registeredName.getUpdatingKey(),
+                registeredName.getNodeUri(),
+                signingKey != null ? signingKey.getSigningKey() : null,
+                signingKey != null ? Util.toEpochSecond(signingKey.getValidFrom()) : 0,
+                registeredName.getDigest()
+            ));
         } catch (CryptoException e) {
             log.error("Crypto exception:", e);
             throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);

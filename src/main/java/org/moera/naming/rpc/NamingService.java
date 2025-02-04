@@ -6,7 +6,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 
-import org.moera.commons.util.LogUtil;
+import org.moera.lib.Rules;
+import org.moera.lib.naming.types.OperationStatusInfo;
+import org.moera.lib.naming.types.RegisteredNameInfo;
+import org.moera.lib.naming.types.SigningKeyInfo;
+import org.moera.lib.util.LogUtil;
 import org.moera.naming.Config;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.RegisteredName;

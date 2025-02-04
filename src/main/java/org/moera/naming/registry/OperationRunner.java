@@ -4,10 +4,10 @@ import java.util.List;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
+import org.moera.lib.naming.types.OperationStatus;
 import org.moera.naming.Config;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
-import org.moera.naming.rpc.OperationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -43,8 +43,9 @@ public class OperationRunner {
         }
         log.debug("Fetching up to {} operations", capacity);
 
-        List<Operation> operations = operationRepository.findAllByStatusOrderByAdded(OperationStatus.ADDED,
-                PageRequest.of(0, capacity));
+        List<Operation> operations = operationRepository.findAllByStatusOrderByAdded(
+            OperationStatus.ADDED, PageRequest.of(0, capacity)
+        );
         capacity -= operations.size();
         operations.forEach(registry::executeOperation);
     }

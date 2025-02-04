@@ -12,8 +12,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import org.moera.naming.rpc.OperationStatus;
-import org.moera.naming.rpc.OperationStatusInfo;
+import org.moera.lib.naming.types.OperationStatus;
+import org.moera.lib.naming.types.OperationStatusInfo;
 import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.util.Util;
 

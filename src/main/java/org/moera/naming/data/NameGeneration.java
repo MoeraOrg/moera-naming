@@ -7,7 +7,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import org.moera.naming.rpc.Rules;
+import org.moera.lib.Rules;
 
 @Embeddable
 public class NameGeneration implements Serializable {
