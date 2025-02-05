@@ -1,9 +1,8 @@
 package org.moera.naming.rpc;
 
-import org.moera.naming.rpc.exception.JsonRpcError;
-import org.moera.naming.rpc.exception.JsonRpcException;
-import org.moera.naming.rpc.exception.ServiceError;
-import org.moera.naming.rpc.exception.ServiceException;
+import org.moera.lib.naming.NamingError;
+import org.moera.lib.naming.rpc.JsonRpcError;
+import org.moera.lib.naming.rpc.JsonRpcResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -41,7 +40,7 @@ public class ExceptionsControllerAdvice {
     @ExceptionHandler
     public ResponseEntity<JsonRpcResponse> serviceException(ServiceException e) {
         var response = new JsonRpcResponse(requestId.get(), e.getRpcCode(), e.getMessage());
-        if (e.getRpcCode() == ServiceError.ENDPOINT_WRONG.getRpcCode()) {
+        if (e.getRpcCode() == NamingError.ENDPOINT_WRONG.getRpcCode()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         return ResponseEntity.badRequest().body(response);
@@ -50,7 +49,7 @@ public class ExceptionsControllerAdvice {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public JsonRpcResponse methodNotSupported(HttpRequestMethodNotSupportedException e) {
-        return new JsonRpcResponse(requestId.get(), ServiceError.ENDPOINT_WRONG);
+        return new JsonRpcResponse(requestId.get(), NamingError.ENDPOINT_WRONG);
     }
 
 }

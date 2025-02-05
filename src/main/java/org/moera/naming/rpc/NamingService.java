@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 
 import org.moera.lib.Rules;
+import org.moera.lib.naming.NamingApi;
+import org.moera.lib.naming.NamingError;
 import org.moera.lib.naming.types.OperationStatusInfo;
 import org.moera.lib.naming.types.RegisteredNameInfo;
 import org.moera.lib.naming.types.SigningKeyInfo;
@@ -16,8 +18,6 @@ import org.moera.naming.data.Operation;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
 import org.moera.naming.registry.Registry;
-import org.moera.naming.rpc.exception.ServiceError;
-import org.moera.naming.rpc.exception.ServiceException;
 import org.moera.naming.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 @Component
-public class NamingService {
+public class NamingService implements NamingApi {
 
     private static final Logger log = LoggerFactory.getLogger(NamingService.class);
 
@@ -36,15 +36,16 @@ public class NamingService {
     private Registry registry;
 
     @JsonRpcMethod
+    @Override
     public UUID put(
-            String name,
-            int generation,
-            byte[] updatingKey,
-            String nodeUri,
-            byte[] signingKey,
-            Long validFrom,
-            byte[] previousDigest,
-            byte[] signature
+        String name,
+        int generation,
+        byte[] updatingKey,
+        String nodeUri,
+        byte[] signingKey,
+        Long validFrom,
+        byte[] previousDigest,
+        byte[] signature
     ) {
         log.info("put(): name = {}, generation = {}, updatingKey = {}, nodeUri = {},"
                 + " signingKey = {}, validFrom = {}, previousDigest = {},"
@@ -54,37 +55,37 @@ public class NamingService {
                 LogUtil.format(signature));
 
         if (ObjectUtils.isEmpty(name)) {
-            throw new ServiceException(ServiceError.NAME_EMPTY);
+            throw new ServiceException(NamingError.NAME_EMPTY);
         }
         if (name.length() > Rules.NAME_MAX_LENGTH) {
-            throw new ServiceException(ServiceError.NAME_TOO_LONG);
+            throw new ServiceException(NamingError.NAME_TOO_LONG);
         }
         if (!Rules.isNameValid(name)) {
-            throw new ServiceException(ServiceError.NAME_FORBIDDEN_CHARS);
+            throw new ServiceException(NamingError.NAME_FORBIDDEN_CHARS);
         }
         if (!config.isGenerationSupported(generation)) {
-            throw new ServiceException(ServiceError.GENERATION_RESERVED);
+            throw new ServiceException(NamingError.GENERATION_RESERVED);
         }
         if (updatingKey != null && updatingKey.length != Rules.PUBLIC_KEY_LENGTH) {
-            throw new ServiceException(ServiceError.UPDATING_KEY_WRONG_LENGTH);
+            throw new ServiceException(NamingError.UPDATING_KEY_WRONG_LENGTH);
         }
         if (nodeUri != null && nodeUri.length() > Rules.NODE_URI_MAX_LENGTH) {
-            throw new ServiceException(ServiceError.NODE_URI_TOO_LONG);
+            throw new ServiceException(NamingError.NODE_URI_TOO_LONG);
         }
         if (signingKey != null) {
             if (signingKey.length != Rules.PUBLIC_KEY_LENGTH) {
-                throw new ServiceException(ServiceError.SIGNING_KEY_WRONG_LENGTH);
+                throw new ServiceException(NamingError.SIGNING_KEY_WRONG_LENGTH);
             }
             if (validFrom == null) {
-                throw new ServiceException(ServiceError.VALID_FROM_EMPTY);
+                throw new ServiceException(NamingError.VALID_FROM_EMPTY);
             }
         }
         Timestamp validFromT = Util.toTimestamp(validFrom);
         if (previousDigest != null && previousDigest.length != Rules.DIGEST_LENGTH) {
-            throw new ServiceException(ServiceError.PREVIOUS_DIGEST_WRONG_LENGTH);
+            throw new ServiceException(NamingError.PREVIOUS_DIGEST_WRONG_LENGTH);
         }
         if (signature != null && signature.length > Rules.SIGNATURE_MAX_LENGTH) {
-            throw new ServiceException(ServiceError.SIGNATURE_TOO_LONG);
+            throw new ServiceException(NamingError.SIGNATURE_TOO_LONG);
         }
 
         return registry.addOperation(name, generation, nodeUri, signature, updatingKey, signingKey, validFromT,
@@ -92,6 +93,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public OperationStatusInfo getStatus(UUID operationId) {
         log.info("getStatus(): operationId = {}", LogUtil.format(operationId));
 
@@ -107,6 +109,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public RegisteredNameInfo getCurrent(String name, int generation) {
         log.info("getCurrent(): name = {}, generation = {}", LogUtil.format(name), generation);
 
@@ -114,6 +117,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public RegisteredNameInfo getPast(String name, int generation, long at) {
         log.info("getPast(): name = {}, generation = {}, at = {}", LogUtil.format(name), generation, at);
 
@@ -121,6 +125,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public RegisteredNameInfo getSimilar(String name) {
         log.info("getSimilar(): name = {}", LogUtil.format(name));
 
@@ -128,6 +133,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public List<SigningKeyInfo> getAllKeys(String name, int generation) {
         log.info("getAllKeys(): name = {}, generation = {}", LogUtil.format(name), generation);
 
@@ -137,6 +143,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public List<RegisteredNameInfo> getAll(long at, int page, int size) {
         log.info("getAll(): at = {}, page = {}, size = {}", at, page, size);
 
@@ -146,6 +153,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public List<RegisteredNameInfo> getAllNewer(long at, int page, int size) {
         log.info("getAllNewer(): at = {}, page = {}, size = {}", at, page, size);
 
@@ -210,6 +218,7 @@ public class NamingService {
     }
 
     @JsonRpcMethod
+    @Override
     public boolean isFree(String name, int generation) {
         log.info("isFree(): name = {}, generation = {}", LogUtil.format(name), LogUtil.format(generation));
 

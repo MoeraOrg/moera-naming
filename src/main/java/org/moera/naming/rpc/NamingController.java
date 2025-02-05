@@ -9,9 +9,10 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.moera.lib.naming.rpc.JsonRpcError;
+import org.moera.lib.naming.rpc.JsonRpcRequest;
+import org.moera.lib.naming.rpc.JsonRpcResponse;
 import org.moera.naming.Config;
-import org.moera.naming.rpc.exception.JsonRpcError;
-import org.moera.naming.rpc.exception.JsonRpcException;
 import org.moera.naming.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

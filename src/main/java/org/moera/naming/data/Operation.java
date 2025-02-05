@@ -12,9 +12,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import org.moera.lib.naming.NamingError;
 import org.moera.lib.naming.types.OperationStatus;
 import org.moera.lib.naming.types.OperationStatusInfo;
-import org.moera.naming.rpc.exception.ServiceError;
 import org.moera.naming.util.Util;
 
 @Entity
@@ -193,9 +193,9 @@ public class Operation {
         info.setAdded(Util.toEpochSecond(getAdded()));
         info.setCompleted(Util.toEpochSecond(getCompleted()));
         info.setErrorCode(getErrorCode());
-        ServiceError serviceError = ServiceError.forCode(getErrorCode());
-        if (serviceError != null) {
-            info.setErrorMessage(serviceError.getMessage());
+        NamingError namingError = NamingError.forCode(getErrorCode());
+        if (namingError != null) {
+            info.setErrorMessage(namingError.getMessage());
         }
         return info;
     }

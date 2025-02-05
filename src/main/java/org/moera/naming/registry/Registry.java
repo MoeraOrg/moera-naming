@@ -12,14 +12,14 @@ import org.moera.lib.Rules;
 import org.moera.lib.crypto.CryptoException;
 import org.moera.lib.crypto.CryptoUtil;
 import org.moera.lib.naming.Fingerprints;
+import org.moera.lib.naming.NamingError;
 import org.moera.lib.naming.types.OperationStatus;
 import org.moera.lib.util.LogUtil;
 import org.moera.naming.data.Operation;
 import org.moera.naming.data.OperationRepository;
 import org.moera.naming.data.RegisteredName;
 import org.moera.naming.data.SigningKey;
-import org.moera.naming.rpc.exception.ServiceError;
-import org.moera.naming.rpc.exception.ServiceException;
+import org.moera.naming.rpc.ServiceException;
 import org.moera.naming.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,13 +123,13 @@ public class Registry {
             target.setNodeUri(nodeUri);
         }
         if (updatingKey == null) {
-            throw new ServiceException(ServiceError.UPDATING_KEY_EMPTY);
+            throw new ServiceException(NamingError.UPDATING_KEY_EMPTY);
         }
         target.setUpdatingKey(updatingKey);
         SigningKey targetKey = null;
         if (signingKey != null) {
             if (validFrom.before(target.getCreated())) {
-                throw new ServiceException(ServiceError.VALID_FROM_BEFORE_CREATED);
+                throw new ServiceException(NamingError.VALID_FROM_BEFORE_CREATED);
             }
 
             targetKey = new SigningKey();
@@ -163,10 +163,10 @@ public class Registry {
         SigningKey targetKey = null;
         if (signingKey != null) {
             if (validFrom.before(target.getCreated())) {
-                throw new ServiceException(ServiceError.VALID_FROM_BEFORE_CREATED);
+                throw new ServiceException(NamingError.VALID_FROM_BEFORE_CREATED);
             }
             if (validFrom.before(Timestamp.from(Instant.now().minus(Rules.VALID_FROM_IN_PAST)))) {
-                throw new ServiceException(ServiceError.VALID_FROM_TOO_FAR_IN_PAST);
+                throw new ServiceException(NamingError.VALID_FROM_TOO_FAR_IN_PAST);
             }
 
             targetKey = new SigningKey();
@@ -185,7 +185,7 @@ public class Registry {
         byte[] digest = registeredName != null ? registeredName.getDigest() : Util.EMPTY_DIGEST;
         previousDigest = previousDigest != null ? previousDigest : Util.EMPTY_DIGEST;
         if (!Arrays.equals(digest, previousDigest)) {
-            throw new ServiceException(ServiceError.PREVIOUS_DIGEST_INCORRECT);
+            throw new ServiceException(NamingError.PREVIOUS_DIGEST_INCORRECT);
         }
     }
 
@@ -229,11 +229,11 @@ public class Registry {
             }
 
             if (!CryptoUtil.verify(putCall, signature, target.getUpdatingKey())) {
-                throw new ServiceException(ServiceError.SIGNATURE_INVALID);
+                throw new ServiceException(NamingError.SIGNATURE_INVALID);
             }
         } catch (CryptoException e) {
             log.error("Crypto exception:", e);
-            throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);
+            throw new ServiceException(NamingError.CRYPTO_EXCEPTION);
         }
     }
 
@@ -253,7 +253,7 @@ public class Registry {
             ));
         } catch (CryptoException e) {
             log.error("Crypto exception:", e);
-            throw new ServiceException(ServiceError.CRYPTO_EXCEPTION);
+            throw new ServiceException(NamingError.CRYPTO_EXCEPTION);
         }
     }
 
@@ -263,26 +263,26 @@ public class Registry {
 
     public List<RegisteredName> getAll(Timestamp at, int page, int size) {
         if (page < 0) {
-            throw new ServiceException(ServiceError.PAGE_INCORRECT);
+            throw new ServiceException(NamingError.PAGE_INCORRECT);
         }
         if (size < 1) {
-            throw new ServiceException(ServiceError.PAGE_SIZE_INCORRECT);
+            throw new ServiceException(NamingError.PAGE_SIZE_INCORRECT);
         }
         if (size > Rules.PAGE_MAX_SIZE) {
-            throw new ServiceException(ServiceError.PAGE_SIZE_TOO_LARGE);
+            throw new ServiceException(NamingError.PAGE_SIZE_TOO_LARGE);
         }
         return storage.getAll(at, page, size);
     }
 
     public List<RegisteredName> getAllNewer(Timestamp at, int page, int size) {
         if (page < 0) {
-            throw new ServiceException(ServiceError.PAGE_INCORRECT);
+            throw new ServiceException(NamingError.PAGE_INCORRECT);
         }
         if (size < 1) {
-            throw new ServiceException(ServiceError.PAGE_SIZE_INCORRECT);
+            throw new ServiceException(NamingError.PAGE_SIZE_INCORRECT);
         }
         if (size > Rules.PAGE_MAX_SIZE) {
-            throw new ServiceException(ServiceError.PAGE_SIZE_TOO_LARGE);
+            throw new ServiceException(NamingError.PAGE_SIZE_TOO_LARGE);
         }
         return storage.getAllNewer(at, page, size);
     }
