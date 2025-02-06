@@ -201,14 +201,14 @@ public class Registry {
 
         try {
             byte[] eSigningKey = null;
-            long eValidFrom = 0;
+            Timestamp eValidFrom = Util.toTimestamp(0L);
 
             if (signingKey != null) {
                 eSigningKey = signingKey;
-                eValidFrom = Util.toEpochSecond(validFrom);
+                eValidFrom = validFrom;
             } else if (latestKey != null) {
                 eSigningKey = latestKey.getSigningKey();
-                eValidFrom = Util.toEpochSecond(latestKey.getValidFrom());
+                eValidFrom = latestKey.getValidFrom();
             }
 
             byte[] putCall = Fingerprints.putCall(
@@ -248,7 +248,7 @@ public class Registry {
                 registeredName.getUpdatingKey(),
                 registeredName.getNodeUri(),
                 signingKey != null ? signingKey.getSigningKey() : null,
-                signingKey != null ? Util.toEpochSecond(signingKey.getValidFrom()) : 0,
+                signingKey != null ? signingKey.getValidFrom() : Util.toTimestamp(0L),
                 registeredName.getDigest()
             ));
         } catch (CryptoException e) {
