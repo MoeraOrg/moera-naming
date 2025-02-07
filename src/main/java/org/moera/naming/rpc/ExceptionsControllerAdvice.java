@@ -1,8 +1,8 @@
 package org.moera.naming.rpc;
 
+import org.moera.lib.jsonrpc.JsonRpcError;
+import org.moera.lib.jsonrpc.JsonRpcResponse;
 import org.moera.lib.naming.NamingError;
-import org.moera.lib.naming.rpc.JsonRpcError;
-import org.moera.lib.naming.rpc.JsonRpcResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
