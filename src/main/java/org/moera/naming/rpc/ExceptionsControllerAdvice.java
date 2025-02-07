@@ -1,6 +1,7 @@
 package org.moera.naming.rpc;
 
 import org.moera.lib.jsonrpc.JsonRpcError;
+import org.moera.lib.jsonrpc.JsonRpcException;
 import org.moera.lib.jsonrpc.JsonRpcResponse;
 import org.moera.lib.naming.NamingError;
 import org.springframework.http.HttpStatus;

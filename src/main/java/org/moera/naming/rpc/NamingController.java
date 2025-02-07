@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.moera.lib.jsonrpc.JsonRpcError;
+import org.moera.lib.jsonrpc.JsonRpcException;
 import org.moera.lib.jsonrpc.JsonRpcRequest;
 import org.moera.lib.jsonrpc.JsonRpcResponse;
 import org.moera.naming.Config;
