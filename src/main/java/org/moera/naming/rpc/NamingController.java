@@ -48,7 +48,7 @@ public class NamingController {
     @CrossOrigin("*")
     @PostMapping(
             value = "/moera-naming",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = {MediaType.APPLICATION_JSON_VALUE, "application/json-rpc"}
     )
     public JsonRpcResponse naming(@Valid @RequestBody JsonRpcRequest request) {
         networkLatency();
