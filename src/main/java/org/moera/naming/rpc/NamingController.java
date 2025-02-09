@@ -9,8 +9,8 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.moera.lib.jsonrpc.JsonRpcApiException;
 import org.moera.lib.jsonrpc.JsonRpcError;
-import org.moera.lib.jsonrpc.JsonRpcException;
 import org.moera.lib.jsonrpc.JsonRpcRequest;
 import org.moera.lib.jsonrpc.JsonRpcResponse;
 import org.moera.naming.Config;
@@ -53,23 +53,23 @@ public class NamingController {
     public JsonRpcResponse naming(@Valid @RequestBody JsonRpcRequest request) {
         networkLatency();
         if (!(request.getId() instanceof String) && !(request.getId() instanceof Integer)) {
-            throw new JsonRpcException(JsonRpcError.INVALID_REQUEST);
+            throw new JsonRpcApiException(JsonRpcError.INVALID_REQUEST);
         }
         exceptionsControllerAdvice.setRequestId(request.getId());
 
         if (request.getMethod() == null) {
-            throw new JsonRpcException(JsonRpcError.INVALID_REQUEST);
+            throw new JsonRpcApiException(JsonRpcError.INVALID_REQUEST);
         }
         for (Method method : namingService.getClass().getMethods()) {
             if (!request.getMethod().equals(method.getName())) {
                 continue;
             }
             if (!method.isAnnotationPresent(JsonRpcMethod.class)) {
-                throw new JsonRpcException(JsonRpcError.METHOD_NOT_FOUND);
+                throw new JsonRpcApiException(JsonRpcError.METHOD_NOT_FOUND);
             }
             JsonNode params = request.getParams();
             if (method.getParameterCount() > 0 && params == null || !params.isObject() && !params.isArray()) {
-                throw new JsonRpcException(JsonRpcError.METHOD_PARAMS_INVALID);
+                throw new JsonRpcApiException(JsonRpcError.METHOD_PARAMS_INVALID);
             }
             Object[] values = new Object[method.getParameterCount()];
             try {
@@ -80,7 +80,7 @@ public class NamingController {
                     Object value;
                     if (valueS == null) {
                         if (parameter.getType().isPrimitive()) {
-                            throw new JsonRpcException(JsonRpcError.METHOD_PARAMS_INVALID);
+                            throw new JsonRpcApiException(JsonRpcError.METHOD_PARAMS_INVALID);
                         }
                         value = null;
                     } else if (parameter.getType().equals(String.class)) {
@@ -95,27 +95,27 @@ public class NamingController {
                         value = UUID.fromString(valueS);
                     } else {
                         log.error("Parameter type {} is not supported", parameter.getType().getName());
-                        throw new JsonRpcException(JsonRpcError.INTERNAL_ERROR);
+                        throw new JsonRpcApiException(JsonRpcError.INTERNAL_ERROR);
                     }
                     values[i] = value;
                 }
             } catch (IllegalArgumentException e) {
-                throw new JsonRpcException(JsonRpcError.METHOD_PARAMS_INVALID);
+                throw new JsonRpcApiException(JsonRpcError.METHOD_PARAMS_INVALID);
             }
             try {
                 return new JsonRpcResponse(request.getId(), method.invoke(namingService, values));
             } catch (Exception e) {
                 if (
                     e instanceof InvocationTargetException ite
-                    && ite.getTargetException() instanceof JsonRpcException ex
+                    && ite.getTargetException() instanceof JsonRpcApiException ex
                 ) {
                     throw ex;
                 }
                 log.error("Error invoking method {}", method.getName(), e);
-                throw new JsonRpcException(JsonRpcError.INTERNAL_ERROR);
+                throw new JsonRpcApiException(JsonRpcError.INTERNAL_ERROR);
             }
         }
-        throw new JsonRpcException(JsonRpcError.METHOD_NOT_FOUND);
+        throw new JsonRpcApiException(JsonRpcError.METHOD_NOT_FOUND);
     }
 
     private void networkLatency() {

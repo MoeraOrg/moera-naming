@@ -1,7 +1,7 @@
 package org.moera.naming.rpc;
 
+import org.moera.lib.jsonrpc.JsonRpcApiException;
 import org.moera.lib.jsonrpc.JsonRpcError;
-import org.moera.lib.jsonrpc.JsonRpcException;
 import org.moera.lib.jsonrpc.JsonRpcResponse;
 import org.moera.lib.naming.NamingError;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,7 @@ public class ExceptionsControllerAdvice {
     }
 
     @ExceptionHandler
-    public ResponseEntity<JsonRpcResponse> jsonRpcException(JsonRpcException e) {
+    public ResponseEntity<JsonRpcResponse> jsonRpcException(JsonRpcApiException e) {
         var response = new JsonRpcResponse(requestId.get(), e.getRpcCode(), e.getMessage());
         if (e.getRpcCode() == JsonRpcError.INVALID_REQUEST.getCode()) {
             return ResponseEntity.badRequest().body(response);
