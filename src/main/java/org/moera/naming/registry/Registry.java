@@ -228,7 +228,7 @@ public class Registry {
                 );
             }
 
-            if (!CryptoUtil.verify(putCall, signature, target.getUpdatingKey())) {
+            if (!CryptoUtil.verifySignature(putCall, signature, target.getUpdatingKey())) {
                 throw new ServiceException(NamingError.SIGNATURE_INVALID);
             }
         } catch (CryptoException e) {
