@@ -13,6 +13,7 @@ import org.moera.lib.jsonrpc.JsonRpcApiException;
 import org.moera.lib.jsonrpc.JsonRpcError;
 import org.moera.lib.jsonrpc.JsonRpcRequest;
 import org.moera.lib.jsonrpc.JsonRpcResponse;
+import org.moera.lib.jsonrpc.JsonRpcResultResponse;
 import org.moera.naming.Config;
 import org.moera.naming.util.Util;
 import org.slf4j.Logger;
@@ -103,7 +104,7 @@ public class NamingController {
                 throw new JsonRpcApiException(JsonRpcError.METHOD_PARAMS_INVALID);
             }
             try {
-                return new JsonRpcResponse(request.getId(), method.invoke(namingService, values));
+                return new JsonRpcResultResponse(request.getId(), method.invoke(namingService, values));
             } catch (Exception e) {
                 if (
                     e instanceof InvocationTargetException ite

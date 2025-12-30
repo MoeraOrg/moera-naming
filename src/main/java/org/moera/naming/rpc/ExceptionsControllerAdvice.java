@@ -2,6 +2,7 @@ package org.moera.naming.rpc;
 
 import org.moera.lib.jsonrpc.JsonRpcApiException;
 import org.moera.lib.jsonrpc.JsonRpcError;
+import org.moera.lib.jsonrpc.JsonRpcErrorResponse;
 import org.moera.lib.jsonrpc.JsonRpcResponse;
 import org.moera.lib.naming.NamingError;
 import org.springframework.http.HttpStatus;
@@ -23,12 +24,12 @@ public class ExceptionsControllerAdvice {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public JsonRpcResponse exception(Throwable e) {
-        return new JsonRpcResponse(requestId.get(), JsonRpcError.PARSE_ERROR);
+        return new JsonRpcErrorResponse(requestId.get(), JsonRpcError.PARSE_ERROR);
     }
 
     @ExceptionHandler
     public ResponseEntity<JsonRpcResponse> jsonRpcException(JsonRpcApiException e) {
-        var response = new JsonRpcResponse(requestId.get(), e.getRpcCode(), e.getMessage());
+        var response = new JsonRpcErrorResponse(requestId.get(), e.getRpcCode(), e.getMessage());
         if (e.getRpcCode() == JsonRpcError.INVALID_REQUEST.getCode()) {
             return ResponseEntity.badRequest().body(response);
         }
@@ -40,7 +41,7 @@ public class ExceptionsControllerAdvice {
 
     @ExceptionHandler
     public ResponseEntity<JsonRpcResponse> serviceException(ServiceException e) {
-        var response = new JsonRpcResponse(requestId.get(), e.getRpcCode(), e.getMessage());
+        var response = new JsonRpcErrorResponse(requestId.get(), e.getRpcCode(), e.getMessage());
         if (e.getRpcCode() == NamingError.ENDPOINT_WRONG.getRpcCode()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -50,7 +51,7 @@ public class ExceptionsControllerAdvice {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public JsonRpcResponse methodNotSupported(HttpRequestMethodNotSupportedException e) {
-        return new JsonRpcResponse(requestId.get(), NamingError.ENDPOINT_WRONG);
+        return new JsonRpcErrorResponse(requestId.get(), NamingError.ENDPOINT_WRONG);
     }
 
 }
